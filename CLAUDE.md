@@ -136,7 +136,6 @@ Todas as escolhas abaixo são intencionais. Não substituir por alternativas sem
 | **@node-rs/argon2** | Hash de senha | Argon2id, estado da arte em hash de senhas. Binding nativo em Rust, rápido. |
 | **@upstash/redis** | Redis client | Conexão com Upstash Redis via REST API. Armazena refresh tokens com TTL automático (expiram sozinhos, sem job de limpeza). Serverless, funciona em qualquer ambiente. |
 | **@fastify/cors** | CORS | Liberar requests do frontend (domínios diferentes: Vercel ↔ Fly). |
-| **@fastify/cookie** | Cookies | Suporte a cookies, usado para refresh token se migrar para cookies no futuro. |
 | **Pino** (embutido no Fastify) | Logging estruturado | Logs JSON automáticos de cada request. Configuração padrão do Fastify, sem setup extra. Enriquecer com logs customizados nos handlers conforme necessidade. |
 | **Sentry (@sentry/node)** | Error tracking + performance | Captura exceções com contexto da request. Mede duração de requests e queries. Free tier suficiente. |
 

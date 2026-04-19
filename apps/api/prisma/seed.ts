@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import { hash } from "@node-rs/argon2";
+import { hashPassword } from "../src/lib/password.js";
 
 const prisma = new PrismaClient();
 
@@ -16,7 +16,7 @@ async function main() {
   const password = requireEnv("SEED_USER_PASSWORD");
   const nome = requireEnv("SEED_USER_NAME");
 
-  const passwordHash = await hash(password);
+  const passwordHash = await hashPassword(password);
 
   const user = await prisma.user.upsert({
     where: { email },
