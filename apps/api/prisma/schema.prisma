@@ -1,0 +1,135 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ========================
+// AUTH
+// ========================
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  nome         String
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("users")
+}
+
+// Refresh tokens não vivem no banco relacional.
+// São armazenados no Redis (Upstash) com TTL automático de 30 dias.
+// Chave: refresh:{userId}:{tokenId} → valor: refresh token string.
+// Expiram e são deletados automaticamente pelo Redis.
+
+// ========================
+// FASE 1 — MVP
+// ========================
+
+model Servico {
+  id        String   @id @default(uuid())
+  nome      String
+  descricao String?
+  preco     Decimal  @db.Decimal(10, 2)
+  ativo     Boolean  @default(true)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  precosEspecificos PrecoEspecifico[]
+  ordensServico     OrdemServicoItem[]
+
+  @@map("servicos")
+}
+
+model Dentista {
+  id          String   @id @default(uuid())
+  nome        String
+  cro         String?
+  telefone    String?
+  email       String?
+  observacoes String?
+  ativo       Boolean  @default(true)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  precosEspecificos PrecoEspecifico[]
+  ordensServico     OrdemServico[]
+
+  @@map("dentistas")
+}
+
+model PrecoEspecifico {
+  id         String   @id @default(uuid())
+  dentistaId String   @map("dentista_id")
+  servicoId  String   @map("servico_id")
+  preco      Decimal  @db.Decimal(10, 2)
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  dentista Dentista @relation(fields: [dentistaId], references: [id], onDelete: Cascade)
+  servico  Servico  @relation(fields: [servicoId], references: [id], onDelete: Cascade)
+
+  @@unique([dentistaId, servicoId])
+  @@map("precos_especificos")
+}
+
+// ========================
+// FASE 2 — Ordens de Serviço (modelar agora, implementar depois)
+// ========================
+
+enum StatusOrdem {
+  RECEBIDO
+  EM_PRODUCAO
+  PRONTO
+  ENTREGUE
+}
+
+model OrdemServico {
+  id              String      @id @default(uuid())
+  dentistaId      String      @map("dentista_id")
+  pacienteNome    String      @map("paciente_nome")
+  corDente        String?     @map("cor_dente")
+  observacoes     String?
+  status          StatusOrdem @default(RECEBIDO)
+  dataEntrada     DateTime    @default(now()) @map("data_entrada")
+  previsaoEntrega DateTime?   @map("previsao_entrega")
+  dataEntrega     DateTime?   @map("data_entrega")
+  createdAt       DateTime    @default(now()) @map("created_at")
+  updatedAt       DateTime    @updatedAt @map("updated_at")
+
+  dentista Dentista           @relation(fields: [dentistaId], references: [id])
+  itens    OrdemServicoItem[]
+  anexos   AnexoOrdem[]
+
+  @@map("ordens_servico")
+}
+
+model OrdemServicoItem {
+  id             String  @id @default(uuid())
+  ordemServicoId String  @map("ordem_servico_id")
+  servicoId      String  @map("servico_id")
+  precoNaData    Decimal @map("preco_na_data") @db.Decimal(10, 2)
+  observacoes    String?
+
+  ordemServico OrdemServico @relation(fields: [ordemServicoId], references: [id], onDelete: Cascade)
+  servico      Servico      @relation(fields: [servicoId], references: [id])
+
+  @@map("ordem_servico_itens")
+}
+
+model AnexoOrdem {
+  id             String   @id @default(uuid())
+  ordemServicoId String   @map("ordem_servico_id")
+  url            String
+  tipo           String
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  ordemServico OrdemServico @relation(fields: [ordemServicoId], references: [id], onDelete: Cascade)
+
+  @@map("anexos_ordem")
+}

@@ -18,5 +18,14 @@
     "turbo": "^2.5",
     "typescript": "^5.8",
     "typescript-eslint": "^8.31"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@node-rs/argon2",
+      "@prisma/client",
+      "@prisma/engines",
+      "esbuild",
+      "prisma"
+    ]
   }
 }
