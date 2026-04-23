@@ -7,7 +7,12 @@ export const meRoute: FastifyPluginAsyncZod = async (app) => {
     "/me",
     {
       preHandler: app.authenticate,
-      schema: { response: { 200: meResponseSchema, 401: errorResponseSchema } },
+      schema: {
+        tags: ["auth"],
+        summary: "Retorna o usuário autenticado",
+        security: [{ bearerAuth: [] }],
+        response: { 200: meResponseSchema, 401: errorResponseSchema },
+      },
     },
     async (request, reply) => {
       const userId = request.user?.userId;

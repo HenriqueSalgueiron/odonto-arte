@@ -15,13 +15,16 @@
     "db:seed": "tsx prisma/seed.ts",
     "db:studio": "prisma studio",
     "db:reset": "prisma migrate reset",
-    "prisma:generate": "prisma generate"
+    "prisma:generate": "prisma generate",
+    "openapi:generate": "tsx scripts/generateOpenapi.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
     "@fastify/cors": "^11.0",
+    "@fastify/swagger": "^9.7.0",
+    "@fastify/swagger-ui": "^5.2.6",
     "@node-rs/argon2": "^2.0.2",
     "@prisma/client": "^6.19.3",
     "@upstash/redis": "^1.37.0",

@@ -15,6 +15,10 @@ export const refreshRoute: FastifyPluginAsyncZod = async (app) => {
     "/refresh",
     {
       schema: {
+        tags: ["auth"],
+        summary: "Rotaciona tokens",
+        description:
+          "Recebe o par (accessToken possivelmente expirado + refreshToken) e retorna um novo par. Cada refresh token é uso-único: a chave antiga é apagada antes da nova ser criada.",
         body: refreshBodySchema,
         response: { 200: authTokensSchema, 401: errorResponseSchema },
       },

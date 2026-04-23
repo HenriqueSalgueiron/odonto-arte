@@ -202,11 +202,11 @@ odontoarte/
 ├── apps/
 │   ├── web/                          # Frontend (Vite + React)
 │   │   ├── src/
-│   │   │   ├── generated/            # Código gerado pelo Kubb (não editar manualmente)
+│   │   │   ├── generated/            # Gerado pelo Kubb — gitignored, regenerar com `pnpm kubb`
 │   │   │   ├── components/           # Componentes reutilizáveis
 │   │   │   ├── pages/                # Páginas/rotas
 │   │   │   ├── hooks/                # Hooks customizados (wrappers sobre os gerados, quando necessário)
-│   │   │   ├── lib/                  # Utilitários (auth, http client base, pdf generation)
+│   │   │   ├── lib/                  # Utilitários (httpClient, pdf generation, formatadores)
 │   │   │   ├── theme/                # Configuração do tema MUI
 │   │   │   └── App.tsx
 │   │   ├── public/                   # Assets estáticos, ícones PWA
@@ -222,10 +222,13 @@ odontoarte/
 │       │   ├── plugins/              # Plugins Fastify (swagger, cors, auth)
 │       │   ├── lib/                  # Utilitários (token generation, password hashing)
 │       │   └── server.ts             # Entry point
+│       ├── scripts/
+│       │   └── generateOpenapi.ts    # Builda o app headless e escreve openapi.json (input do Kubb)
 │       ├── prisma/
 │       │   ├── schema.prisma
 │       │   ├── migrations/
 │       │   └── seed.ts               # Seed: cria usuária inicial (mãe)
+│       ├── openapi.json              # Artefato gerado (gitignored) — lido pelo Kubb
 │       ├── Dockerfile                # Multi-stage build para Fly.io
 │       └── package.json
 │
@@ -533,12 +536,10 @@ odontoarte/
 │   │           ├── dentistas/CLAUDE.md    # regras de CRUD, relação com preços
 │   │           └── precos/CLAUDE.md       # lógica de preço efetivo, ajuste global, o que afeta e o que não afeta
 │   └── web/
-│       ├── CLAUDE.md                      # convenções do frontend, MUI, padrões de componente
-│       └── src/
-│           └── generated/CLAUDE.md        # NÃO EDITAR MANUALMENTE. Gerado pelo Kubb. Rodar pnpm kubb para regenerar.
+│       └── CLAUDE.md                      # convenções do frontend, MUI, padrões de componente, aviso sobre generated/
 ```
 
-No backend, cada domínio de rota tem seu CLAUDE.md com regras de negócio específicas. No frontend, CLAUDE.md fica no nível do app (convenções gerais) e em `generated/` (aviso de não editar). Os CLAUDE.md de domínio no frontend não são necessários porque as convenções de componente são uniformes entre páginas.
+No backend, cada domínio de rota tem seu CLAUDE.md com regras de negócio específicas. No frontend, CLAUDE.md fica só no nível do app — a pasta `generated/` é gitignored e apagada a cada `pnpm kubb` (não dá pra manter um CLAUDE.md lá dentro), então o aviso de "não editar manualmente" vive no `apps/web/CLAUDE.md`. Os CLAUDE.md de domínio no frontend não são necessários porque as convenções de componente são uniformes entre páginas.
 
 ### Backend
 - Uma pasta por domínio dentro de `routes/`: `auth/`, `servicos/`, `dentistas/`, `precos/`.

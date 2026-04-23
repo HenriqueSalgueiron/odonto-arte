@@ -12,6 +12,10 @@ export const loginRoute: FastifyPluginAsyncZod = async (app) => {
     "/login",
     {
       schema: {
+        tags: ["auth"],
+        summary: "Login com email e senha",
+        description:
+          "Retorna um par de tokens (access JWT de curta vida + refresh opaco). Resposta 401 genérica para email inexistente ou senha inválida.",
         body: loginBodySchema,
         response: { 200: authTokensSchema, 401: errorResponseSchema },
       },

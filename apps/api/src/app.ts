@@ -11,6 +11,7 @@ import { errorHandlerPlugin } from "@/plugins/errorHandler.js";
 import { prismaPlugin } from "@/plugins/prisma.js";
 import { tokenStorePlugin } from "@/plugins/tokenStore.js";
 import { authPlugin } from "@/plugins/auth.js";
+import { swaggerPlugin } from "@/plugins/swagger.js";
 import type { TokenStore } from "@/lib/tokenStore.js";
 import { healthRoute } from "@/routes/health.js";
 import { authRoutes } from "@/routes/auth/index.js";
@@ -28,6 +29,8 @@ export async function buildApp(opts: BuildAppOptions = {}) {
 
   await app.register(errorHandlerPlugin);
   await app.register(cors, { origin: getEnv().CORS_ORIGIN });
+
+  await app.register(swaggerPlugin);
 
   await app.register(prismaPlugin, { prisma: opts.prisma });
   await app.register(tokenStorePlugin, { tokenStore: opts.tokenStore });

@@ -6,15 +6,25 @@
       "persistent": true
     },
     "build": {
-      "dependsOn": ["^build"],
+      "dependsOn": ["^build", "//#kubb"],
       "outputs": ["dist/**"]
     },
     "test": {
+      "dependsOn": ["//#kubb"],
       "cache": false
     },
     "lint": {},
     "type-check": {
-      "dependsOn": ["^build"]
+      "dependsOn": ["^build", "//#kubb"]
+    },
+    "@odontoarte/api#openapi:generate": {
+      "inputs": ["src/**", "scripts/**"],
+      "outputs": ["openapi.json"]
+    },
+    "//#kubb": {
+      "dependsOn": ["@odontoarte/api#openapi:generate"],
+      "inputs": ["kubb.config.ts", "apps/api/openapi.json"],
+      "outputs": ["apps/web/src/generated/**"]
     }
   }
 }

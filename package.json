@@ -10,10 +10,19 @@
     "build": "turbo build",
     "test": "turbo test",
     "lint": "turbo lint",
-    "type-check": "turbo type-check"
+    "type-check": "turbo type-check",
+    "openapi": "pnpm --filter @odontoarte/api openapi:generate",
+    "kubb": "kubb generate --config kubb.config.ts"
   },
   "devDependencies": {
     "@eslint/js": "^9.25",
+    "@kubb/cli": "^4.37.2",
+    "@kubb/core": "^4.37.2",
+    "@kubb/plugin-client": "^4.37.2",
+    "@kubb/plugin-oas": "^4.37.2",
+    "@kubb/plugin-react-query": "^4.37.2",
+    "@kubb/plugin-ts": "^4.37.2",
+    "@kubb/plugin-zod": "^4.37.2",
     "eslint": "^9.25",
     "turbo": "^2.5",
     "typescript": "^5.8",
