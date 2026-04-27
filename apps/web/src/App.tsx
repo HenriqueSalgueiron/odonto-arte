@@ -1,25 +1,26 @@
-import { Container, Typography, Box } from "@mui/material";
+import { useEffect } from "react";
+import { Routes, Route, useNavigate } from "react-router";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { AUTH_LOGOUT_EVENT } from "@/lib/httpClient";
+import LoginPage from "@/pages/Login";
+import HomePage from "@/pages/Home";
 
 function App() {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const handler = () => navigate("/login", { replace: true });
+    window.addEventListener(AUTH_LOGOUT_EVENT, handler);
+    return () => window.removeEventListener(AUTH_LOGOUT_EVENT, handler);
+  }, [navigate]);
+
   return (
-    <Container maxWidth="sm">
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          minHeight: "100vh",
-        }}
-      >
-        <Typography variant="h3" component="h1" gutterBottom>
-          OdontoArte
-        </Typography>
-        <Typography variant="subtitle1" color="text.secondary">
-          Sistema de Gestão de Laboratório de Prótese
-        </Typography>
-      </Box>
-    </Container>
+    <Routes>
+      <Route path="/login" element={<LoginPage />} />
+      <Route element={<ProtectedRoute />}>
+        <Route path="/" element={<HomePage />} />
+      </Route>
+    </Routes>
   );
 }
 

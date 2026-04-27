@@ -22,7 +22,6 @@ export default defineConfig({
     }),
     pluginZod({
       output: { path: "zod" },
-      typed: true,
       group: { type: "tag", name: ({ group }) => `${group}Zod` },
     }),
     pluginClient({
