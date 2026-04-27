@@ -14,12 +14,18 @@ import { Navigate, useNavigate } from "react-router";
 import { postAuthLoginMutationRequestSchema } from "@/generated";
 import type { PostAuthLoginMutationRequest } from "@/generated";
 import { useAuth } from "@/hooks/useAuth";
+import { z } from "zod/v4";
 
 type LoginForm = PostAuthLoginMutationRequest;
 
 export function LoginPage() {
   const navigate = useNavigate();
   const { isAuthenticated, login, loginError, isLoggingIn } = useAuth();
+
+  const loginSchema = postAuthLoginMutationRequestSchema.extend({
+    email: z.email("Email inválido").min(1, "Email é obrigatório"),
+    password: z.string().min(1, "Senha é obrigatória"),
+  });
 
   const {
     register,
@@ -28,7 +34,7 @@ export function LoginPage() {
     setError,
     clearErrors,
   } = useForm<LoginForm>({
-    resolver: zodResolver(postAuthLoginMutationRequestSchema),
+    resolver: zodResolver(loginSchema),
     defaultValues: { email: "", password: "" },
   });
 
@@ -65,7 +71,13 @@ export function LoginPage() {
       >
         <Paper
           elevation={3}
-          sx={{ p: 4, width: "100%", display: "flex", flexDirection: "column", gap: 2 }}
+          sx={{
+            p: 4,
+            width: "100%",
+            display: "flex",
+            flexDirection: "column",
+            gap: 2,
+          }}
           component="form"
           onSubmit={onSubmit}
           noValidate
