@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -6,10 +6,14 @@ import {
   Box,
   Button,
   Container,
+  IconButton,
+  InputAdornment,
   Paper,
   TextField,
   Typography,
 } from "@mui/material";
+import Visibility from "@mui/icons-material/Visibility";
+import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import { Navigate, useNavigate } from "react-router";
 import { postAuthLoginMutationRequestSchema } from "@/generated";
 import type { PostAuthLoginMutationRequest } from "@/generated";
@@ -21,6 +25,7 @@ type LoginForm = PostAuthLoginMutationRequest;
 export function LoginPage() {
   const navigate = useNavigate();
   const { isAuthenticated, login, loginError, isLoggingIn } = useAuth();
+  const [showPassword, setShowPassword] = useState(false);
 
   const loginSchema = postAuthLoginMutationRequestSchema.extend({
     email: z.email("Email inválido").min(1, "Email é obrigatório"),
@@ -106,12 +111,29 @@ export function LoginPage() {
 
           <TextField
             label="Senha"
-            type="password"
+            type={showPassword ? "text" : "password"}
             autoComplete="current-password"
             fullWidth
             error={Boolean(errors.password)}
             helperText={errors.password?.message}
             {...register("password")}
+            slotProps={{
+              input: {
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      aria-label={
+                        showPassword ? "Ocultar senha" : "Mostrar senha"
+                      }
+                      onClick={() => setShowPassword((prev) => !prev)}
+                      edge="end"
+                    >
+                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              },
+            }}
           />
 
           <Button
