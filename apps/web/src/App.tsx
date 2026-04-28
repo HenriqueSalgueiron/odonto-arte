@@ -4,6 +4,7 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AUTH_LOGOUT_EVENT } from "@/lib/httpClient";
 import LoginPage from "@/pages/Login";
 import HomePage from "@/pages/Home";
+import ServicesListPage from "@/pages/Services";
 
 function App() {
   const navigate = useNavigate();
@@ -19,6 +20,7 @@ function App() {
       <Route path="/login" element={<LoginPage />} />
       <Route element={<ProtectedRoute />}>
         <Route path="/" element={<HomePage />} />
+        <Route path="/services" element={<ServicesListPage />} />
       </Route>
     </Routes>
   );

@@ -10,6 +10,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { MemoryRouter } from "react-router";
 import theme from "@/theme";
 import { createQueryClient } from "@/lib/queryClient";
+import { NotificationProvider } from "@/components/NotificationProvider";
 
 type Options = Omit<RenderOptions, "wrapper"> & {
   initialEntries?: string[];
@@ -28,7 +29,9 @@ export function renderWithProviders(
       <QueryClientProvider client={queryClient}>
         <ThemeProvider theme={theme}>
           <CssBaseline />
-          <MemoryRouter initialEntries={initialEntries}>{children}</MemoryRouter>
+          <NotificationProvider>
+            <MemoryRouter initialEntries={initialEntries}>{children}</MemoryRouter>
+          </NotificationProvider>
         </ThemeProvider>
       </QueryClientProvider>
     );
