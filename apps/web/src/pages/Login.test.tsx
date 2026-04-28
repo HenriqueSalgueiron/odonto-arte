@@ -24,7 +24,7 @@ describe("LoginPage", () => {
     const user = userEvent.setup();
     await user.click(screen.getByRole("button", { name: /entrar/i }));
 
-    expect(await screen.findByText(/invalid email/i)).toBeInTheDocument();
+    expect(await screen.findByText(/email inválido/i)).toBeInTheDocument();
   });
 
   it("submete credenciais válidas e redireciona para /", async () => {
@@ -32,7 +32,7 @@ describe("LoginPage", () => {
 
     const user = userEvent.setup();
     await user.type(screen.getByLabelText(/email/i), FAKE_USER.email);
-    await user.type(screen.getByLabelText(/senha/i), "secret");
+    await user.type(screen.getByLabelText("Senha"), "secret");
     await user.click(screen.getByRole("button", { name: /entrar/i }));
 
     await waitFor(() => {
@@ -55,7 +55,7 @@ describe("LoginPage", () => {
 
     const user = userEvent.setup();
     await user.type(screen.getByLabelText(/email/i), "wrong@x.com");
-    await user.type(screen.getByLabelText(/senha/i), "bad");
+    await user.type(screen.getByLabelText("Senha"), "bad");
     await user.click(screen.getByRole("button", { name: /entrar/i }));
 
     expect(
