@@ -38,10 +38,10 @@ describe("authStore", () => {
     useAuthStore.getState().setUser({
       id: "u1",
       email: "a@b.com",
-      nome: "Ana",
+      name: "Ana",
     });
 
-    expect(useAuthStore.getState().user?.nome).toBe("Ana");
+    expect(useAuthStore.getState().user?.name).toBe("Ana");
     expect(useAuthStore.getState().status).toBe("authenticated");
 
     const persisted = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "{}");
@@ -61,7 +61,7 @@ describe("authStore", () => {
     useAuthStore.getState().setUser({
       id: "u1",
       email: "a@b.com",
-      nome: "Ana",
+      name: "Ana",
     });
 
     useAuthStore.getState().clear();

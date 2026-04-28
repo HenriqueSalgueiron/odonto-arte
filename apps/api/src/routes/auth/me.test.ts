@@ -20,7 +20,7 @@ describe("GET /auth/me", () => {
   it("retorna dados do usuário autenticado", async () => {
     const email = testEmail("me");
     const password = "senha";
-    const user = await createTestUser({ email, password, nome: "Ana" });
+    const user = await createTestUser({ email, password, name: "Ana" });
     const { app } = await buildTestApp();
 
     const login = await app.inject({
@@ -37,7 +37,7 @@ describe("GET /auth/me", () => {
     });
 
     expect(res.statusCode).toBe(200);
-    expect(res.json()).toEqual({ id: user.id, email, nome: "Ana" });
+    expect(res.json()).toEqual({ id: user.id, email, name: "Ana" });
 
     await app.close();
   });

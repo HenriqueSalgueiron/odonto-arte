@@ -19,7 +19,7 @@ describe("httpClient", () => {
         return HttpResponse.json({
           id: "u1",
           email: "a@b.com",
-          nome: "Ana",
+          name: "Ana",
         });
       }),
     );
@@ -71,7 +71,7 @@ describe("httpClient", () => {
         return HttpResponse.json({
           id: "u1",
           email: "a@b.com",
-          nome: "Ana",
+          name: "Ana",
         });
       }),
       http.post(`${API_URL}/auth/refresh`, () =>
@@ -173,7 +173,7 @@ describe("httpClient", () => {
           return HttpResponse.json({
             id: "u1",
             email: "a@b.com",
-            nome: "Ana",
+            name: "Ana",
           });
         }
         return HttpResponse.json({ error: "unauthorized" }, { status: 401 });

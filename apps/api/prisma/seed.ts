@@ -14,14 +14,14 @@ function requireEnv(name: string): string {
 async function main() {
   const email = requireEnv("SEED_USER_EMAIL");
   const password = requireEnv("SEED_USER_PASSWORD");
-  const nome = requireEnv("SEED_USER_NAME");
+  const name = requireEnv("SEED_USER_NAME");
 
   const passwordHash = await hashPassword(password);
 
   const user = await prisma.user.upsert({
     where: { email },
     update: {},
-    create: { email, nome, passwordHash },
+    create: { email, name, passwordHash },
   });
 
   console.log(`Seed user ready: ${user.email}`);

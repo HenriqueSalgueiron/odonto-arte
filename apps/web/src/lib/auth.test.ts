@@ -14,7 +14,7 @@ describe("logoutSession", () => {
     useAuthStore.getState().setUser({
       id: "u1",
       email: "a@b.com",
-      nome: "Ana",
+      name: "Ana",
     });
 
     let received: { accessToken: string; refreshToken: string } | null = null;

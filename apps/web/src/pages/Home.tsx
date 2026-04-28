@@ -24,7 +24,7 @@ export function HomePage() {
         }}
       >
         <Typography variant="h4" component="h1">
-          Olá, {user?.nome ?? ""}
+          Olá, {user?.name ?? ""}
         </Typography>
         <Typography variant="body1" color="text.secondary">
           Sistema de Gestão de Laboratório de Prótese

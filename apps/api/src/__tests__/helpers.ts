@@ -23,7 +23,7 @@ export function testEmail(tag: string): string {
 export async function createTestUser(params: {
   email: string;
   password: string;
-  nome?: string;
+  name?: string;
 }) {
   const prisma = getTestPrisma();
   const passwordHash = await hashPassword(params.password);
@@ -31,7 +31,7 @@ export async function createTestUser(params: {
     data: {
       email: params.email,
       passwordHash,
-      nome: params.nome ?? "Test User",
+      name: params.name ?? "Test User",
     },
   });
 }

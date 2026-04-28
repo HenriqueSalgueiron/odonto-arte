@@ -26,7 +26,7 @@ describe("HomePage", () => {
     renderWithProviders(<App />, { initialEntries: ["/"] });
 
     expect(
-      screen.getByRole("heading", { name: new RegExp(FAKE_USER.nome, "i") }),
+      screen.getByRole("heading", { name: new RegExp(FAKE_USER.name, "i") }),
     ).toBeInTheDocument();
   });
 

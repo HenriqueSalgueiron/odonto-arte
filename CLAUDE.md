@@ -248,6 +248,8 @@ odontoarte/
 
 Fase 1 (implementar) e Fase 2 (apenas modelar) juntas, para evitar migrations dolorosas no futuro.
 
+Identificadores em inglês (modelos, campos, enums) seguindo § 9 das convenções; strings de UI ficam em português na camada de aplicação.
+
 ```prisma
 generator client {
   provider = "prisma-client-js"
@@ -263,12 +265,12 @@ datasource db {
 // ========================
 
 model User {
-  id           String    @id @default(uuid())
-  email        String    @unique
-  passwordHash String    @map("password_hash")
-  nome         String
-  createdAt    DateTime  @default(now()) @map("created_at")
-  updatedAt    DateTime  @updatedAt @map("updated_at")
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  name         String
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
 
   @@map("users")
 }
@@ -282,117 +284,117 @@ model User {
 // FASE 1 — MVP
 // ========================
 
-model Servico {
+model Service {
   id          String   @id @default(uuid())
-  nome        String
-  descricao   String?
-  preco       Decimal  @db.Decimal(10, 2)  // preço-tabela em BRL
-  ativo       Boolean  @default(true)
+  name        String
+  description String?
+  price       Decimal  @db.Decimal(10, 2)  // preço-tabela em BRL
+  active      Boolean  @default(true)
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
-  precosEspecificos PrecoEspecifico[]
-  ordensServico     OrdemServicoItem[]    // Fase 2
+  specificPrices SpecificPrice[]
+  orderItems     ServiceOrderItem[]    // Fase 2
 
-  @@map("servicos")
+  @@map("services")
 }
 
-model Dentista {
-  id          String   @id @default(uuid())
-  nome        String
-  cro         String?
-  telefone    String?
-  email       String?
-  observacoes String?
-  ativo       Boolean  @default(true)
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+model Dentist {
+  id        String   @id @default(uuid())
+  name      String
+  cro       String?
+  phone     String?
+  email     String?
+  notes     String?
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
-  precosEspecificos PrecoEspecifico[]
-  ordensServico     OrdemServico[]        // Fase 2
+  specificPrices SpecificPrice[]
+  serviceOrders  ServiceOrder[]        // Fase 2
 
-  @@map("dentistas")
+  @@map("dentists")
 }
 
-model PrecoEspecifico {
-  id          String   @id @default(uuid())
-  dentistaId  String   @map("dentista_id")
-  servicoId   String   @map("servico_id")
-  preco       Decimal  @db.Decimal(10, 2)  // preço negociado para este dentista
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+model SpecificPrice {
+  id        String   @id @default(uuid())
+  dentistId String   @map("dentist_id")
+  serviceId String   @map("service_id")
+  price     Decimal  @db.Decimal(10, 2)  // preço negociado para este dentista
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
-  dentista    Dentista @relation(fields: [dentistaId], references: [id], onDelete: Cascade)
-  servico     Servico  @relation(fields: [servicoId], references: [id], onDelete: Cascade)
+  dentist Dentist @relation(fields: [dentistId], references: [id], onDelete: Cascade)
+  service Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
 
-  @@unique([dentistaId, servicoId])  // um preço específico por par dentista-serviço
-  @@map("precos_especificos")
+  @@unique([dentistId, serviceId])  // um preço específico por par dentista-serviço
+  @@map("specific_prices")
 }
 
 // ========================
 // FASE 2 — Ordens de Serviço (modelar agora, implementar depois)
 // ========================
 
-enum StatusOrdem {
-  RECEBIDO
-  EM_PRODUCAO
-  PRONTO
-  ENTREGUE
+enum OrderStatus {
+  RECEIVED
+  IN_PRODUCTION
+  READY
+  DELIVERED
 }
 
-model OrdemServico {
-  id              String       @id @default(uuid())
-  dentistaId      String       @map("dentista_id")
-  pacienteNome    String       @map("paciente_nome")
-  corDente        String?      @map("cor_dente")
-  observacoes     String?
-  status          StatusOrdem  @default(RECEBIDO)
-  dataEntrada     DateTime     @default(now()) @map("data_entrada")
-  previsaoEntrega DateTime?    @map("previsao_entrega")
-  dataEntrega     DateTime?    @map("data_entrega")
-  createdAt       DateTime     @default(now()) @map("created_at")
-  updatedAt       DateTime     @updatedAt @map("updated_at")
+model ServiceOrder {
+  id                  String      @id @default(uuid())
+  dentistId           String      @map("dentist_id")
+  patientName         String      @map("patient_name")
+  toothShade          String?     @map("tooth_shade")
+  notes               String?
+  status              OrderStatus @default(RECEIVED)
+  receivedAt          DateTime    @default(now()) @map("received_at")
+  estimatedDeliveryAt DateTime?   @map("estimated_delivery_at")
+  deliveredAt         DateTime?   @map("delivered_at")
+  createdAt           DateTime    @default(now()) @map("created_at")
+  updatedAt           DateTime    @updatedAt @map("updated_at")
 
-  dentista        Dentista     @relation(fields: [dentistaId], references: [id])
-  itens           OrdemServicoItem[]
-  anexos          AnexoOrdem[]
+  dentist     Dentist            @relation(fields: [dentistId], references: [id])
+  items       ServiceOrderItem[]
+  attachments OrderAttachment[]
 
-  @@map("ordens_servico")
+  @@map("service_orders")
 }
 
-model OrdemServicoItem {
-  id              String   @id @default(uuid())
-  ordemServicoId  String   @map("ordem_servico_id")
-  servicoId       String   @map("servico_id")
-  precoNaData     Decimal  @db.Decimal(10, 2) @map("preco_na_data") // snapshot do preço no momento da entrada
-  observacoes     String?
+model ServiceOrderItem {
+  id             String  @id @default(uuid())
+  serviceOrderId String  @map("service_order_id")
+  serviceId      String  @map("service_id")
+  priceSnapshot  Decimal @db.Decimal(10, 2) @map("price_snapshot") // snapshot do preço no momento da entrada
+  notes          String?
 
-  ordemServico    OrdemServico @relation(fields: [ordemServicoId], references: [id], onDelete: Cascade)
-  servico         Servico      @relation(fields: [servicoId], references: [id])
+  serviceOrder ServiceOrder @relation(fields: [serviceOrderId], references: [id], onDelete: Cascade)
+  service      Service      @relation(fields: [serviceId], references: [id])
 
-  @@map("ordem_servico_itens")
+  @@map("service_order_items")
 }
 
-model AnexoOrdem {
-  id              String   @id @default(uuid())
-  ordemServicoId  String   @map("ordem_servico_id")
-  url             String                // chave do objeto no S3 (presigned URL gerada sob demanda)
-  tipo            String                // "ficha", "foto_trabalho", etc.
-  createdAt       DateTime @default(now()) @map("created_at")
+model OrderAttachment {
+  id             String   @id @default(uuid())
+  serviceOrderId String   @map("service_order_id")
+  url            String                // chave do objeto no S3 (presigned URL gerada sob demanda)
+  kind           String                // "intake_form", "work_photo", etc.
+  createdAt      DateTime @default(now()) @map("created_at")
 
-  ordemServico    OrdemServico @relation(fields: [ordemServicoId], references: [id], onDelete: Cascade)
+  serviceOrder ServiceOrder @relation(fields: [serviceOrderId], references: [id], onDelete: Cascade)
 
-  @@map("anexos_ordem")
+  @@map("order_attachments")
 }
 ```
 
 Notas sobre a modelagem:
 - Todas as tabelas usam `@@map` para nomes em snake_case no banco (convenção SQL), enquanto o Prisma Client mantém camelCase no código TypeScript.
-- `PrecoEspecifico` tem constraint unique em `[dentistaId, servicoId]` — só pode existir um preço negociado por par dentista-serviço.
-- `OrdemServicoItem.precoNaData` é um snapshot: grava o preço que valia quando o trabalho entrou, mesmo que o preço mude depois. Essencial para histórico financeiro correto.
-- Campo `ativo` em Servico e Dentista permite soft delete (desativar sem perder histórico).
+- `SpecificPrice` tem constraint unique em `[dentistId, serviceId]` — só pode existir um preço negociado por par dentista-serviço.
+- `ServiceOrderItem.priceSnapshot` é um snapshot: grava o preço que valia quando o trabalho entrou, mesmo que o preço mude depois. Essencial para histórico financeiro correto.
+- Campo `active` em Service e Dentist permite soft delete (desativar sem perder histórico).
 - Refresh tokens NÃO vivem no Postgres — estão no Redis (Upstash) com TTL automático. O Postgres guarda apenas dados de domínio persistentes.
-- Fase 2 já está modelada. As migrations vão criar todas as tabelas, mas o código da Fase 2 (rotas, UI) não será implementado agora. As relações já existem (`ordensServico`, `OrdemServicoItem`, `AnexoOrdem`) para que não seja necessário alterar tabelas existentes quando a Fase 2 for implementada.
+- Fase 2 já está modelada. As migrations vão criar todas as tabelas, mas o código da Fase 2 (rotas, UI) não será implementado agora. As relações já existem (`serviceOrders`, `ServiceOrderItem`, `OrderAttachment`) para que não seja necessário alterar tabelas existentes quando a Fase 2 for implementada.
 
 ---
 

@@ -11,7 +11,7 @@ export const FAKE_TOKENS = {
 export const FAKE_USER = {
   id: "user-1",
   email: "ana@odontoarte.test",
-  nome: "Ana",
+  name: "Ana",
 };
 
 export const handlers = [

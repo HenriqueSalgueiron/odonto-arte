@@ -22,7 +22,7 @@ export const meRoute: FastifyPluginAsyncZod = async (app) => {
 
       const user = await app.prisma.user.findUnique({
         where: { id: userId },
-        select: { id: true, email: true, nome: true },
+        select: { id: true, email: true, name: true },
       });
 
       if (!user) {
