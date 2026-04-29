@@ -1,5 +1,6 @@
 import type { FastifyPluginAsyncZod } from "fastify-type-provider-zod";
 import { Prisma } from "@prisma/client";
+import { z } from "zod";
 import { serviceIdParamsSchema } from "@/schemas/services.js";
 import { errorResponseSchema } from "@/schemas/errors.js";
 
@@ -16,6 +17,7 @@ export const deleteServiceRoute: FastifyPluginAsyncZod = async (app) => {
         security: [{ bearerAuth: [] }],
         params: serviceIdParamsSchema,
         response: {
+          204: z.null(),
           401: errorResponseSchema,
           404: errorResponseSchema,
         },
@@ -27,7 +29,7 @@ export const deleteServiceRoute: FastifyPluginAsyncZod = async (app) => {
           where: { id: request.params.id },
           data: { active: false },
         });
-        return reply.code(204).send();
+        return reply.code(204).send(null);
       } catch (err) {
         if (
           err instanceof Prisma.PrismaClientKnownRequestError &&
