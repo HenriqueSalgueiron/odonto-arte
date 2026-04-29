@@ -7,6 +7,12 @@ export function formatBRL(value: number): string {
   return currencyFormatter.format(value);
 }
 
+export function maskBRL(input: string): string {
+  const digits = input.replace(/\D/g, "");
+  if (!digits) return "";
+  return formatBRL(Number(digits) / 100);
+}
+
 export function parseBRLInput(input: string): number | null {
   const cleaned = input
     .replace(/[^\d,.-]/g, "")

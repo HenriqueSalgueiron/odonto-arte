@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { formatBRL, parseBRLInput } from "@/lib/formatters/currency";
+import { formatBRL, maskBRL, parseBRLInput } from "@/lib/formatters/currency";
 
 describe("formatBRL", () => {
   it("formata zero", () => {
@@ -36,5 +36,31 @@ describe("parseBRLInput", () => {
     const value = 1234.5;
     const parsed = parseBRLInput(formatBRL(value));
     expect(parsed).toBe(value);
+  });
+});
+
+describe("maskBRL", () => {
+  it("retorna string vazia para entrada vazia", () => {
+    expect(maskBRL("")).toBe("");
+  });
+
+  it("trata cada dígito como centavo", () => {
+    expect(maskBRL("1")).toMatch(/R\$\s*0,01/);
+    expect(maskBRL("100")).toMatch(/R\$\s*1,00/);
+    expect(maskBRL("25000")).toMatch(/R\$\s*250,00/);
+  });
+
+  it("ignora letras", () => {
+    expect(maskBRL("abc")).toBe("");
+    expect(maskBRL("abc123")).toMatch(/R\$\s*1,23/);
+  });
+
+  it("ignora separadores ao acumular dígitos", () => {
+    expect(maskBRL("250,00")).toMatch(/R\$\s*250,00/);
+    expect(maskBRL("1.234,56")).toMatch(/R\$\s*1\.234,56/);
+  });
+
+  it("round-trip com parseBRLInput preserva o valor", () => {
+    expect(parseBRLInput(maskBRL("25000"))).toBe(250);
   });
 });

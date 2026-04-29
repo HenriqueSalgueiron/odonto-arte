@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useForm, Controller } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Button,
@@ -7,10 +7,7 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  FormControlLabel,
   Stack,
-  Switch,
-  TextField,
 } from "@mui/material";
 import { useQueryClient } from "@tanstack/react-query";
 import { z } from "zod/v4";
@@ -20,8 +17,13 @@ import {
   getServicesQueryKey,
 } from "@/generated";
 import type { GetServices200 } from "@/generated";
-import { parseBRLInput } from "@/lib/formatters/currency";
+import { formatBRL, parseBRLInput } from "@/lib/formatters/currency";
 import { useNotification } from "@/components/NotificationProvider";
+import {
+  RHFCurrencyField,
+  RHFSwitch,
+  RHFTextField,
+} from "@/components/form";
 
 type Service = GetServices200["items"][number];
 
@@ -55,10 +57,7 @@ function defaultsFor(initial: Service | undefined): FormValues {
   return {
     name: initial?.name ?? "",
     description: initial?.description ?? "",
-    priceInput:
-      initial !== undefined
-        ? initial.price.toFixed(2).replace(".", ",")
-        : "",
+    priceInput: initial !== undefined ? formatBRL(initial.price) : "",
     active: initial?.active ?? true,
   };
 }
@@ -73,11 +72,10 @@ export function ServiceFormDialog({
   const { notify } = useNotification();
 
   const {
-    register,
     handleSubmit,
     control,
     reset,
-    formState: { errors, isSubmitting },
+    formState: { isSubmitting },
   } = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: defaultsFor(initial),
@@ -130,50 +128,30 @@ export function ServiceFormDialog({
         </DialogTitle>
         <DialogContent>
           <Stack spacing={2} sx={{ mt: 1 }}>
-            <TextField
+            <RHFTextField
+              control={control}
+              name="name"
               label="Nome"
               autoFocus
               fullWidth
-              error={Boolean(errors.name)}
-              helperText={errors.name?.message}
-              {...register("name")}
             />
-            <TextField
+            <RHFTextField
+              control={control}
+              name="description"
               label="Descrição"
               multiline
               minRows={2}
               fullWidth
-              error={Boolean(errors.description)}
-              helperText={errors.description?.message}
-              {...register("description")}
             />
-            <TextField
+            <RHFCurrencyField
+              control={control}
+              name="priceInput"
               label="Preço"
               fullWidth
-              inputMode="decimal"
-              error={Boolean(errors.priceInput)}
-              helperText={
-                errors.priceInput?.message ??
-                "Use vírgula para centavos (ex: 250,00)"
-              }
-              {...register("priceInput")}
+              helperText="Digite apenas números (centavos automáticos)"
             />
             {mode === "edit" ? (
-              <Controller
-                name="active"
-                control={control}
-                render={({ field }) => (
-                  <FormControlLabel
-                    control={
-                      <Switch
-                        checked={field.value}
-                        onChange={(_, checked) => field.onChange(checked)}
-                      />
-                    }
-                    label="Ativo"
-                  />
-                )}
-              />
+              <RHFSwitch control={control} name="active" label="Ativo" />
             ) : null}
           </Stack>
         </DialogContent>

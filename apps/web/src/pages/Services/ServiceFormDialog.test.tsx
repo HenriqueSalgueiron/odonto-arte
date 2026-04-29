@@ -5,6 +5,7 @@ import { renderWithProviders, screen, waitFor, within } from "@/test-utils";
 import { server } from "@/mocks/server";
 import { API_URL, fakeServicesDb, makeFakeService } from "@/mocks/handlers";
 import { ServiceFormDialog } from "@/pages/Services/ServiceFormDialog";
+import { formatBRL } from "@/lib/formatters/currency";
 
 describe("ServiceFormDialog (create)", () => {
   it("exibe erro ao submeter sem nome", async () => {
@@ -116,7 +117,7 @@ describe("ServiceFormDialog (edit)", () => {
     );
 
     expect(screen.getByLabelText(/nome/i)).toHaveValue("PPR");
-    expect(screen.getByLabelText(/preço/i)).toHaveValue("250,00");
+    expect(screen.getByLabelText(/preço/i)).toHaveValue(formatBRL(250));
 
     const user = userEvent.setup();
     const nameInput = screen.getByLabelText(/nome/i);

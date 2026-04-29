@@ -9,7 +9,6 @@ import {
   IconButton,
   InputAdornment,
   Paper,
-  TextField,
   Typography,
 } from "@mui/material";
 import Visibility from "@mui/icons-material/Visibility";
@@ -18,6 +17,7 @@ import { Navigate, useNavigate } from "react-router";
 import { postAuthLoginMutationRequestSchema } from "@/generated";
 import type { PostAuthLoginMutationRequest } from "@/generated";
 import { useAuth } from "@/hooks/useAuth";
+import { RHFTextField } from "@/components/form";
 import { z } from "zod/v4";
 
 type LoginForm = PostAuthLoginMutationRequest;
@@ -33,8 +33,8 @@ export function LoginPage() {
   });
 
   const {
-    register,
     handleSubmit,
+    control,
     formState: { errors },
     setError,
     clearErrors,
@@ -98,25 +98,23 @@ export function LoginPage() {
             <Alert severity="error">{errors.root.message}</Alert>
           ) : null}
 
-          <TextField
+          <RHFTextField
+            control={control}
+            name="email"
             label="Email"
             type="email"
             autoComplete="email"
             autoFocus
             fullWidth
-            error={Boolean(errors.email)}
-            helperText={errors.email?.message}
-            {...register("email")}
           />
 
-          <TextField
+          <RHFTextField
+            control={control}
+            name="password"
             label="Senha"
             type={showPassword ? "text" : "password"}
             autoComplete="current-password"
             fullWidth
-            error={Boolean(errors.password)}
-            helperText={errors.password?.message}
-            {...register("password")}
             slotProps={{
               input: {
                 endAdornment: (
