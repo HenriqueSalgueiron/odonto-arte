@@ -10,7 +10,6 @@
       "outputs": ["dist/**"]
     },
     "test": {
-      "dependsOn": ["//#kubb"],
       "cache": false
     },
     "lint": {},
@@ -18,7 +17,12 @@
       "dependsOn": ["^build", "//#kubb"]
     },
     "@odontoarte/api#openapi:generate": {
-      "inputs": ["src/**", "scripts/**"],
+      "inputs": [
+        "src/**",
+        "scripts/**",
+        "!src/__tests__/**",
+        "!src/**/*.test.ts"
+      ],
       "outputs": ["openapi.json"]
     },
     "//#kubb": {
