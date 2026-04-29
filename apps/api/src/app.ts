@@ -30,7 +30,13 @@ export async function buildApp(opts: BuildAppOptions = {}) {
   app.setSerializerCompiler(serializerCompiler);
 
   await app.register(errorHandlerPlugin);
-  await app.register(cors, { origin: getEnv().CORS_ORIGIN });
+  await app.register(cors, {
+    origin: getEnv().CORS_ORIGIN,
+    methods: ["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: false,
+    maxAge: 86400,
+  });
 
   await app.register(swaggerPlugin);
 
