@@ -44,6 +44,28 @@ O Kubb importa um `client` default daqui. É o ponto único onde adicionamos bas
 
 Centralizado em `src/theme/`. Não usar cores hardcoded em `sx` — sempre referenciar o tema (`theme.palette.primary.main` etc.).
 
+## Formulários
+
+Forms usam React Hook Form + Zod. **Não chamar `register()` direto nem usar `<Controller>` solto** — use os wrappers em `src/components/form/`:
+
+- `RHFTextField` — TextField + Controller + propagação de erro vinda do `formState`. Aceita todas as props do MUI TextField (`type`, `multiline`, `slotProps`, etc.).
+- `RHFCurrencyField` — TextField com `maskBRL` aplicado a cada keystroke + `inputMode="decimal"`. O form guarda a string formatada (`"R$ 250,00"`); converta com `parseBRLInput` antes de enviar para a API.
+- `RHFSwitch` — `FormControlLabel` + `Switch` + Controller, para campos booleanos.
+
+Padrão de uso:
+
+```tsx
+const { control, handleSubmit } = useForm<FormValues>({ ... });
+return (
+  <form onSubmit={handleSubmit(onSubmit)}>
+    <RHFTextField control={control} name="email" label="Email" />
+    <RHFCurrencyField control={control} name="price" label="Preço" />
+  </form>
+);
+```
+
+Quando precisar de um campo com mask novo (telefone, CPF, CRO), crie `RHFXxxField` ao lado seguindo o mesmo padrão (Controller + componente MUI + transformação no `onChange`). Helpers de mask vivem em `src/lib/formatters/` (atualmente só `currency.ts` — `maskBRL`, `formatBRL`, `parseBRLInput`).
+
 ## Testes
 
 - **Unitário** (funções puras): Vitest, `{nome}.test.ts` ao lado.
