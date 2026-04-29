@@ -15,7 +15,7 @@ export function getTestPrisma(): PrismaClient {
 
 export async function buildTestApp(opts: { tokenStore?: TokenStore } = {}) {
   const tokenStore = opts.tokenStore ?? createInMemoryTokenStore();
-  const app = await buildApp({ tokenStore, prisma: getTestPrisma() });
+  const app = await buildApp({ tokenStore, prisma: getTestPrisma(), logger: false });
   return { app, tokenStore };
 }
 

@@ -20,10 +20,11 @@ import { servicesRoutes } from "@/routes/services/index.js";
 export type BuildAppOptions = {
   tokenStore?: TokenStore;
   prisma?: PrismaClient;
+  logger?: boolean;
 };
 
 export async function buildApp(opts: BuildAppOptions = {}) {
-  const app = Fastify({ logger: true }).withTypeProvider<ZodTypeProvider>();
+  const app = Fastify({ logger: opts.logger ?? true }).withTypeProvider<ZodTypeProvider>();
 
   app.setValidatorCompiler(validatorCompiler);
   app.setSerializerCompiler(serializerCompiler);
