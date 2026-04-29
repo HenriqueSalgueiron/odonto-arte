@@ -1,6 +1,17 @@
-import { useNavigate } from "react-router";
-import { Box, Button, Container, Typography } from "@mui/material";
+import { Link as RouterLink, useNavigate } from "react-router";
+import {
+  Box,
+  Button,
+  Card,
+  CardActionArea,
+  CardContent,
+  Container,
+  Stack,
+  Typography,
+} from "@mui/material";
 import { useAuth } from "@/hooks/useAuth";
+
+const NAV_CARDS = [{ to: "/services", title: "Serviços" }];
 
 export function HomePage() {
   const { user, logout } = useAuth();
@@ -18,17 +29,27 @@ export function HomePage() {
           minHeight: "100vh",
           display: "flex",
           flexDirection: "column",
-          alignItems: "center",
           justifyContent: "center",
           gap: 3,
+          py: 4,
         }}
       >
         <Typography variant="h4" component="h1">
-          Olá, {user?.name ?? ""}
+          Bem-vindo, {user?.name ?? ""}
         </Typography>
-        <Typography variant="body1" color="text.secondary">
-          Sistema de Gestão de Laboratório de Prótese
-        </Typography>
+
+        <Stack spacing={2}>
+          {NAV_CARDS.map((card) => (
+            <Card key={card.to}>
+              <CardActionArea component={RouterLink} to={card.to}>
+                <CardContent>
+                  <Typography variant="h6">{card.title}</Typography>
+                </CardContent>
+              </CardActionArea>
+            </Card>
+          ))}
+        </Stack>
+
         <Button variant="outlined" onClick={handleLogout}>
           Sair
         </Button>
