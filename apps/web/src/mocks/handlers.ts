@@ -24,6 +24,18 @@ type FakeService = {
   updatedAt: string;
 };
 
+type FakeDentist = {
+  id: string;
+  name: string;
+  cro: string | null;
+  phone: string | null;
+  email: string | null;
+  notes: string | null;
+  active: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
 const NOW = new Date("2026-04-28T12:00:00.000Z").toISOString();
 
 export const fakeServicesDb: { items: FakeService[] } = { items: [] };
@@ -40,6 +52,28 @@ export function makeFakeService(
     name: overrides.name,
     description: overrides.description ?? null,
     price: overrides.price ?? 100,
+    active: overrides.active ?? true,
+    createdAt: overrides.createdAt ?? NOW,
+    updatedAt: overrides.updatedAt ?? NOW,
+  };
+}
+
+export const fakeDentistsDb: { items: FakeDentist[] } = { items: [] };
+
+export function resetFakeDentistsDb(items: FakeDentist[] = []) {
+  fakeDentistsDb.items = items.map((d) => ({ ...d }));
+}
+
+export function makeFakeDentist(
+  overrides: Partial<FakeDentist> & { name: string },
+): FakeDentist {
+  return {
+    id: overrides.id ?? crypto.randomUUID(),
+    name: overrides.name,
+    cro: overrides.cro ?? null,
+    phone: overrides.phone ?? null,
+    email: overrides.email ?? null,
+    notes: overrides.notes ?? null,
     active: overrides.active ?? true,
     createdAt: overrides.createdAt ?? NOW,
     updatedAt: overrides.updatedAt ?? NOW,
@@ -102,6 +136,56 @@ export const handlers = [
     }
     fakeServicesDb.items[idx] = {
       ...fakeServicesDb.items[idx],
+      active: false,
+      updatedAt: NOW,
+    };
+    return new HttpResponse(null, { status: 204 });
+  }),
+
+  http.get(`${API_URL}/dentists/`, ({ request }) => {
+    const url = new URL(request.url);
+    const includeInactive = url.searchParams.get("includeInactive") === "true";
+    const items = fakeDentistsDb.items
+      .filter((d) => includeInactive || d.active)
+      .sort((a, b) => a.name.localeCompare(b.name));
+    return HttpResponse.json({ items });
+  }),
+  http.get(`${API_URL}/dentists/:id`, ({ params }) => {
+    const found = fakeDentistsDb.items.find((d) => d.id === params.id);
+    if (!found) {
+      return HttpResponse.json({ error: "dentist_not_found" }, { status: 404 });
+    }
+    return HttpResponse.json(found);
+  }),
+  http.post(`${API_URL}/dentists/`, async ({ request }) => {
+    const body = (await request.json()) as Partial<FakeDentist>;
+    const created = makeFakeDentist({
+      name: body.name ?? "",
+      cro: body.cro ?? null,
+      phone: body.phone ?? null,
+      email: body.email ?? null,
+      notes: body.notes ?? null,
+    });
+    fakeDentistsDb.items.push(created);
+    return HttpResponse.json(created, { status: 201 });
+  }),
+  http.put(`${API_URL}/dentists/:id`, async ({ params, request }) => {
+    const body = (await request.json()) as Partial<FakeDentist>;
+    const idx = fakeDentistsDb.items.findIndex((d) => d.id === params.id);
+    if (idx === -1) {
+      return HttpResponse.json({ error: "dentist_not_found" }, { status: 404 });
+    }
+    const updated = { ...fakeDentistsDb.items[idx], ...body, updatedAt: NOW };
+    fakeDentistsDb.items[idx] = updated;
+    return HttpResponse.json(updated);
+  }),
+  http.delete(`${API_URL}/dentists/:id`, ({ params }) => {
+    const idx = fakeDentistsDb.items.findIndex((d) => d.id === params.id);
+    if (idx === -1) {
+      return HttpResponse.json({ error: "dentist_not_found" }, { status: 404 });
+    }
+    fakeDentistsDb.items[idx] = {
+      ...fakeDentistsDb.items[idx],
       active: false,
       updatedAt: NOW,
     };

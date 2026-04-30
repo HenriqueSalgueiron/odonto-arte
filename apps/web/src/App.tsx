@@ -5,6 +5,7 @@ import { AUTH_LOGOUT_EVENT } from "@/lib/httpClient";
 import LoginPage from "@/pages/Login";
 import HomePage from "@/pages/Home";
 import ServicesListPage from "@/pages/Services";
+import DentistsListPage from "@/pages/Dentists";
 
 function App() {
   const navigate = useNavigate();
@@ -21,6 +22,7 @@ function App() {
       <Route element={<ProtectedRoute />}>
         <Route path="/" element={<HomePage />} />
         <Route path="/services" element={<ServicesListPage />} />
+        <Route path="/dentists" element={<DentistsListPage />} />
       </Route>
     </Routes>
   );

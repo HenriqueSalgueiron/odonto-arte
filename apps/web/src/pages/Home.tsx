@@ -11,7 +11,10 @@ import {
 } from "@mui/material";
 import { useAuth } from "@/hooks/useAuth";
 
-const NAV_CARDS = [{ to: "/services", title: "Serviços" }];
+const NAV_CARDS = [
+  { to: "/services", title: "Serviços" },
+  { to: "/dentists", title: "Dentistas" },
+];
 
 export function HomePage() {
   const { user, logout } = useAuth();
