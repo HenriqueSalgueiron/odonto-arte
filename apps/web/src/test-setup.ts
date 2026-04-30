@@ -4,6 +4,7 @@ import { server } from "@/mocks/server";
 import { useAuthStore } from "@/stores/authStore";
 import {
   resetFakeDentistsDb,
+  resetFakeLabInfoDb,
   resetFakeServicesDb,
   resetFakeSpecificPricesDb,
 } from "@/mocks/handlers";
@@ -23,4 +24,5 @@ beforeEach(() => {
   resetFakeServicesDb();
   resetFakeDentistsDb();
   resetFakeSpecificPricesDb();
+  resetFakeLabInfoDb();
 });

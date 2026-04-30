@@ -108,6 +108,10 @@ export async function createTestSpecificPrice(data: {
   return getTestPrisma().specificPrice.create({ data });
 }
 
+export async function resetLabInfo() {
+  await getTestPrisma().labInfo.deleteMany({});
+}
+
 export async function authHeaderFor(
   userId: string,
 ): Promise<{ Authorization: string }> {

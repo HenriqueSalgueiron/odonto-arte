@@ -78,6 +78,18 @@ model SpecificPrice {
   @@map("specific_prices")
 }
 
+model LabInfo {
+  id                       String   @id @default(uuid())
+  name                     String   @default("OdontoArte")
+  responsibleTechnician    String?  @map("responsible_technician")
+  responsibleTechnicianCro String?  @map("responsible_technician_cro")
+  phone                    String?
+  email                    String?
+  updatedAt                DateTime @updatedAt @map("updated_at")
+
+  @@map("lab_info")
+}
+
 // ========================
 // FASE 2 — Ordens de Serviço (modelar agora, implementar depois)
 // ========================

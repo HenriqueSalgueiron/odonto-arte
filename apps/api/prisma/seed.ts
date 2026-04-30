@@ -25,6 +25,12 @@ async function main() {
   });
 
   console.log(`Seed user ready: ${user.email}`);
+
+  const existingLabInfo = await prisma.labInfo.findFirst();
+  if (!existingLabInfo) {
+    await prisma.labInfo.create({ data: { name: "OdontoArte" } });
+    console.log("Seed lab info created");
+  }
 }
 
 main()

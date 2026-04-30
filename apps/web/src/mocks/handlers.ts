@@ -91,6 +91,42 @@ export function makeFakeDentist(
 
 export const fakeSpecificPricesDb: { items: FakeSpecificPrice[] } = { items: [] };
 
+type FakeLabInfo = {
+  id: string;
+  name: string;
+  responsibleTechnician: string | null;
+  responsibleTechnicianCro: string | null;
+  phone: string | null;
+  email: string | null;
+  updatedAt: string;
+};
+
+export const fakeLabInfoDb: { value: FakeLabInfo | null } = { value: null };
+
+export function makeFakeLabInfo(
+  overrides: Partial<FakeLabInfo> = {},
+): FakeLabInfo {
+  return {
+    id: overrides.id ?? "lab-info-singleton",
+    name: overrides.name ?? "OdontoArte",
+    responsibleTechnician:
+      overrides.responsibleTechnician === undefined
+        ? null
+        : overrides.responsibleTechnician,
+    responsibleTechnicianCro:
+      overrides.responsibleTechnicianCro === undefined
+        ? null
+        : overrides.responsibleTechnicianCro,
+    phone: overrides.phone === undefined ? null : overrides.phone,
+    email: overrides.email === undefined ? null : overrides.email,
+    updatedAt: overrides.updatedAt ?? NOW,
+  };
+}
+
+export function resetFakeLabInfoDb(value: FakeLabInfo | null = null) {
+  fakeLabInfoDb.value = value ? { ...value } : null;
+}
+
 export function resetFakeSpecificPricesDb(items: FakeSpecificPrice[] = []) {
   fakeSpecificPricesDb.items = items.map((p) => ({ ...p }));
 }
@@ -125,6 +161,33 @@ export const handlers = [
     async () => new HttpResponse(null, { status: 204 }),
   ),
   http.get(`${API_URL}/auth/me`, async () => HttpResponse.json(FAKE_USER)),
+
+  http.get(`${API_URL}/lab-info/`, () => {
+    if (!fakeLabInfoDb.value) {
+      fakeLabInfoDb.value = makeFakeLabInfo();
+    }
+    return HttpResponse.json(fakeLabInfoDb.value);
+  }),
+  http.put(`${API_URL}/lab-info/`, async ({ request }) => {
+    const body = (await request.json()) as Partial<FakeLabInfo>;
+    const current = fakeLabInfoDb.value ?? makeFakeLabInfo();
+    const updated: FakeLabInfo = {
+      ...current,
+      responsibleTechnician:
+        typeof body.responsibleTechnician === "string"
+          ? body.responsibleTechnician
+          : current.responsibleTechnician,
+      responsibleTechnicianCro:
+        typeof body.responsibleTechnicianCro === "string"
+          ? body.responsibleTechnicianCro
+          : current.responsibleTechnicianCro,
+      phone: typeof body.phone === "string" ? body.phone : current.phone,
+      email: typeof body.email === "string" ? body.email : current.email,
+      updatedAt: new Date().toISOString(),
+    };
+    fakeLabInfoDb.value = updated;
+    return HttpResponse.json(updated);
+  }),
 
   http.get(`${API_URL}/services/`, ({ request }) => {
     const url = new URL(request.url);
