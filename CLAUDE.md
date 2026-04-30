@@ -216,7 +216,7 @@ odontoarte/
 │   │
 │   └── api/                          # Backend (Fastify + Prisma)
 │       ├── src/
-│       │   ├── routes/               # Rotas organizadas por domínio (auth/, servicos/, dentistas/, precos/)
+│       │   ├── routes/               # Rotas organizadas por domínio (auth/, services/, dentists/, prices/)
 │       │   ├── schemas/              # Schemas Zod (fonte de verdade dos tipos)
 │       │   ├── middlewares/          # Auth middleware, error handler
 │       │   ├── plugins/              # Plugins Fastify (swagger, cors, auth)
@@ -534,9 +534,9 @@ odontoarte/
 │   │   └── src/
 │   │       └── routes/
 │   │           ├── auth/CLAUDE.md         # fluxo de auth, Redis, refresh token rotation, edge cases
-│   │           ├── servicos/CLAUDE.md     # regras de CRUD, soft delete, validações
-│   │           ├── dentistas/CLAUDE.md    # regras de CRUD, relação com preços
-│   │           └── precos/CLAUDE.md       # lógica de preço efetivo, ajuste global, o que afeta e o que não afeta
+│   │           ├── services/CLAUDE.md      # regras de CRUD, soft delete, validações
+│   │           ├── dentists/CLAUDE.md      # regras de CRUD, soft delete, campos opcionais
+│   │           └── prices/CLAUDE.md        # lógica de preço efetivo, ajuste global, o que afeta e o que não afeta
 │   └── web/
 │       └── CLAUDE.md                      # convenções do frontend, MUI, padrões de componente, aviso sobre generated/
 ```
@@ -544,7 +544,7 @@ odontoarte/
 No backend, cada domínio de rota tem seu CLAUDE.md com regras de negócio específicas. No frontend, CLAUDE.md fica só no nível do app — a pasta `generated/` é gitignored e apagada a cada `pnpm kubb` (não dá pra manter um CLAUDE.md lá dentro), então o aviso de "não editar manualmente" vive no `apps/web/CLAUDE.md`. Os CLAUDE.md de domínio no frontend não são necessários porque as convenções de componente são uniformes entre páginas.
 
 ### Backend
-- Uma pasta por domínio dentro de `routes/`: `auth/`, `servicos/`, `dentistas/`, `precos/`.
+- Uma pasta por domínio dentro de `routes/`: `auth/`, `services/`, `dentists/`, `prices/`.
 - Cada domínio tem seus schemas Zod no diretório `schemas/` correspondente ou em `schemas/{dominio}.ts`.
 - Handlers devem ser funções puras que recebem request e reply. Lógica de negócio complexa vai em services se necessário, mas não criar camada de abstração antes da necessidade.
 - Erros de negócio retornam HTTP semântico (400, 401, 404, 409) com body `{ error: string, details?: any }`.

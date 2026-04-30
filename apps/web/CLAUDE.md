@@ -50,6 +50,7 @@ Forms usam React Hook Form + Zod. **Não chamar `register()` direto nem usar `<C
 
 - `RHFTextField` — TextField + Controller + propagação de erro vinda do `formState`. Aceita todas as props do MUI TextField (`type`, `multiline`, `slotProps`, etc.).
 - `RHFCurrencyField` — TextField com `maskBRL` aplicado a cada keystroke + `inputMode="decimal"`. O form guarda a string formatada (`"R$ 250,00"`); converta com `parseBRLInput` antes de enviar para a API.
+- `RHFPhoneField` — TextField com `maskBRPhone` aplicado a cada keystroke + `inputMode="tel"`. O form guarda a string mascarada (`"(11) 99999-8888"`); converta com `unmaskPhone` (só dígitos) antes de enviar para a API.
 - `RHFSwitch` — `FormControlLabel` + `Switch` + Controller, para campos booleanos.
 
 Padrão de uso:
@@ -64,7 +65,7 @@ return (
 );
 ```
 
-Quando precisar de um campo com mask novo (telefone, CPF, CRO), crie `RHFXxxField` ao lado seguindo o mesmo padrão (Controller + componente MUI + transformação no `onChange`). Helpers de mask vivem em `src/lib/formatters/` (atualmente só `currency.ts` — `maskBRL`, `formatBRL`, `parseBRLInput`).
+Quando precisar de um campo com mask novo (CPF, CRO, etc.), crie `RHFXxxField` ao lado seguindo o mesmo padrão (Controller + componente MUI + transformação no `onChange`). Helpers de mask vivem em `src/lib/formatters/` — `currency.ts` (`maskBRL`, `formatBRL`, `parseBRLInput`) e `phone.ts` (`maskBRPhone`, `unmaskPhone`).
 
 ## Testes
 

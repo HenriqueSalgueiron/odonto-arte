@@ -10,7 +10,7 @@ apps/api/src/
 ├── lib/               # funções puras reaproveitáveis (hash, tokens, refreshToken, tokenStore)
 ├── plugins/           # plugins Fastify (errorHandler, prisma, tokenStore, auth)
 ├── schemas/           # schemas Zod por domínio — contrato das rotas
-├── routes/            # uma pasta por domínio (auth/, e futuramente servicos/, dentistas/, precos/)
+├── routes/            # uma pasta por domínio (auth/, services/, dentists/, e futuramente prices/)
 ├── __tests__/         # globalSetup.ts (schemas por worker), setup.ts (env/DATABASE_URL por worker), helpers.ts
 ├── app.ts             # buildApp({ tokenStore?, prisma? }) — entrada única
 └── server.ts          # boot em produção/dev (lê env, chama buildApp, listen)
