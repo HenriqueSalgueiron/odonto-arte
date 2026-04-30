@@ -14,12 +14,23 @@ export const FAKE_USER = {
   name: "Ana",
 };
 
+type FakeServiceCategoryRef = { id: string; name: string };
+
 type FakeService = {
   id: string;
   name: string;
   description: string | null;
   price: number;
   active: boolean;
+  category: FakeServiceCategoryRef | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+type FakeCategory = {
+  id: string;
+  name: string;
+  serviceCount: number;
   createdAt: string;
   updatedAt: string;
 };
@@ -62,9 +73,36 @@ export function makeFakeService(
     description: overrides.description ?? null,
     price: overrides.price ?? 100,
     active: overrides.active ?? true,
+    category: overrides.category ?? null,
     createdAt: overrides.createdAt ?? NOW,
     updatedAt: overrides.updatedAt ?? NOW,
   };
+}
+
+export const fakeCategoriesDb: { items: FakeCategory[] } = { items: [] };
+
+export function resetFakeCategoriesDb(items: FakeCategory[] = []) {
+  fakeCategoriesDb.items = items.map((c) => ({ ...c }));
+}
+
+export function makeFakeCategory(
+  overrides: Partial<FakeCategory> & { name: string },
+): FakeCategory {
+  return {
+    id: overrides.id ?? crypto.randomUUID(),
+    name: overrides.name,
+    serviceCount: overrides.serviceCount ?? 0,
+    createdAt: overrides.createdAt ?? NOW,
+    updatedAt: overrides.updatedAt ?? NOW,
+  };
+}
+
+function recomputeCategoryServiceCounts() {
+  for (const c of fakeCategoriesDb.items) {
+    c.serviceCount = fakeServicesDb.items.filter(
+      (s) => s.category?.id === c.id,
+    ).length;
+  }
 }
 
 export const fakeDentistsDb: { items: FakeDentist[] } = { items: [] };
@@ -205,23 +243,64 @@ export const handlers = [
     return HttpResponse.json(found);
   }),
   http.post(`${API_URL}/services/`, async ({ request }) => {
-    const body = (await request.json()) as Partial<FakeService>;
+    const body = (await request.json()) as Partial<FakeService> & {
+      categoryId?: string | null;
+    };
+    let category: FakeServiceCategoryRef | null = null;
+    if (body.categoryId) {
+      const cat = fakeCategoriesDb.items.find((c) => c.id === body.categoryId);
+      if (!cat) {
+        return HttpResponse.json(
+          { error: "category_not_found" },
+          { status: 400 },
+        );
+      }
+      category = { id: cat.id, name: cat.name };
+    }
     const created = makeFakeService({
       name: body.name ?? "",
       description: body.description ?? null,
       price: body.price ?? 0,
+      category,
     });
     fakeServicesDb.items.push(created);
+    recomputeCategoryServiceCounts();
     return HttpResponse.json(created, { status: 201 });
   }),
   http.put(`${API_URL}/services/:id`, async ({ params, request }) => {
-    const body = (await request.json()) as Partial<FakeService>;
+    const body = (await request.json()) as Partial<FakeService> & {
+      categoryId?: string | null;
+    };
     const idx = fakeServicesDb.items.findIndex((s) => s.id === params.id);
     if (idx === -1) {
       return HttpResponse.json({ error: "service_not_found" }, { status: 404 });
     }
-    const updated = { ...fakeServicesDb.items[idx], ...body, updatedAt: NOW };
+    const current = fakeServicesDb.items[idx];
+    let category = current.category;
+    if (body.categoryId !== undefined) {
+      if (body.categoryId === null) {
+        category = null;
+      } else {
+        const cat = fakeCategoriesDb.items.find((c) => c.id === body.categoryId);
+        if (!cat) {
+          return HttpResponse.json(
+            { error: "category_not_found" },
+            { status: 400 },
+          );
+        }
+        category = { id: cat.id, name: cat.name };
+      }
+    }
+    const { categoryId: _ignore, ...rest } = body;
+    void _ignore;
+    const updated: FakeService = {
+      ...current,
+      ...rest,
+      category,
+      updatedAt: NOW,
+    };
     fakeServicesDb.items[idx] = updated;
+    recomputeCategoryServiceCounts();
     return HttpResponse.json(updated);
   }),
   http.delete(`${API_URL}/services/:id`, ({ params }) => {
@@ -234,6 +313,102 @@ export const handlers = [
       active: false,
       updatedAt: NOW,
     };
+    return new HttpResponse(null, { status: 204 });
+  }),
+
+  http.get(`${API_URL}/categories/`, () => {
+    recomputeCategoryServiceCounts();
+    const items = [...fakeCategoriesDb.items].sort((a, b) =>
+      a.name.localeCompare(b.name),
+    );
+    return HttpResponse.json({ items });
+  }),
+  http.get(`${API_URL}/categories/:id`, ({ params }) => {
+    recomputeCategoryServiceCounts();
+    const found = fakeCategoriesDb.items.find((c) => c.id === params.id);
+    if (!found) {
+      return HttpResponse.json({ error: "category_not_found" }, { status: 404 });
+    }
+    return HttpResponse.json(found);
+  }),
+  http.post(`${API_URL}/categories/`, async ({ request }) => {
+    const body = (await request.json()) as { name?: string };
+    const name = body.name?.trim() ?? "";
+    if (!name) {
+      return HttpResponse.json({ error: "validation_error" }, { status: 400 });
+    }
+    if (name.toLowerCase() === "diversos") {
+      return HttpResponse.json({ error: "validation_error" }, { status: 400 });
+    }
+    if (
+      fakeCategoriesDb.items.some(
+        (c) => c.name.toLowerCase() === name.toLowerCase(),
+      )
+    ) {
+      return HttpResponse.json(
+        { error: "category_name_taken" },
+        { status: 409 },
+      );
+    }
+    const created = makeFakeCategory({ name });
+    fakeCategoriesDb.items.push(created);
+    return HttpResponse.json(created, { status: 201 });
+  }),
+  http.put(`${API_URL}/categories/:id`, async ({ params, request }) => {
+    const body = (await request.json()) as { name?: string };
+    const idx = fakeCategoriesDb.items.findIndex((c) => c.id === params.id);
+    if (idx === -1) {
+      return HttpResponse.json({ error: "category_not_found" }, { status: 404 });
+    }
+    const next = { ...fakeCategoriesDb.items[idx] };
+    if (body.name !== undefined) {
+      const name = body.name.trim();
+      if (!name) {
+        return HttpResponse.json(
+          { error: "validation_error" },
+          { status: 400 },
+        );
+      }
+      if (name.toLowerCase() === "diversos") {
+        return HttpResponse.json(
+          { error: "validation_error" },
+          { status: 400 },
+        );
+      }
+      if (
+        fakeCategoriesDb.items.some(
+          (c) => c.id !== next.id && c.name.toLowerCase() === name.toLowerCase(),
+        )
+      ) {
+        return HttpResponse.json(
+          { error: "category_name_taken" },
+          { status: 409 },
+        );
+      }
+      next.name = name;
+    }
+    next.updatedAt = NOW;
+    fakeCategoriesDb.items[idx] = next;
+    // Atualiza category.name embarcada nos serviços.
+    for (const s of fakeServicesDb.items) {
+      if (s.category?.id === next.id) {
+        s.category = { id: next.id, name: next.name };
+      }
+    }
+    return HttpResponse.json(next);
+  }),
+  http.delete(`${API_URL}/categories/:id`, ({ params }) => {
+    const idx = fakeCategoriesDb.items.findIndex((c) => c.id === params.id);
+    if (idx === -1) {
+      return HttpResponse.json({ error: "category_not_found" }, { status: 404 });
+    }
+    const removed = fakeCategoriesDb.items[idx];
+    fakeCategoriesDb.items.splice(idx, 1);
+    for (const s of fakeServicesDb.items) {
+      if (s.category?.id === removed.id) {
+        s.category = null;
+      }
+    }
     return new HttpResponse(null, { status: 204 });
   }),
 

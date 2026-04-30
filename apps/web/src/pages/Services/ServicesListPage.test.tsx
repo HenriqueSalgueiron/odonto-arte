@@ -156,4 +156,21 @@ describe("ServicesListPage", () => {
       await screen.findByText(/nenhum serviço cadastrado/i),
     ).toBeInTheDocument();
   });
+
+  it("renderiza chip da categoria quando o serviço tem categoria", async () => {
+    authenticate();
+    fakeServicesDb.items = [
+      makeFakeService({
+        name: "PPR",
+        price: 250,
+        category: { id: "cat-1", name: "Próteses" },
+      }),
+      makeFakeService({ name: "Coroa", price: 800, category: null }),
+    ];
+
+    renderWithProviders(<ServicesListPage />);
+
+    await screen.findByText("PPR");
+    expect(screen.getByText("Próteses")).toBeInTheDocument();
+  });
 });

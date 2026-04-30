@@ -12,14 +12,16 @@ import {
 import { useQueryClient } from "@tanstack/react-query";
 import { z } from "zod/v4";
 import {
+  getCategoriesQueryKey,
+  getServicesQueryKey,
   usePostServices,
   usePutServicesId,
-  getServicesQueryKey,
 } from "@/generated";
 import type { GetServices200 } from "@/generated";
 import { formatBRL, parseBRLInput } from "@/lib/formatters/currency";
 import { useNotification } from "@/components/NotificationProvider";
 import {
+  RHFCategorySelect,
   RHFCurrencyField,
   RHFSwitch,
   RHFTextField,
@@ -48,6 +50,7 @@ const formSchema = z.object({
     },
     { message: "Preço inválido" },
   ),
+  categoryId: z.string().nullable(),
   active: z.boolean(),
 });
 
@@ -58,6 +61,7 @@ function defaultsFor(initial: Service | undefined): FormValues {
     name: initial?.name ?? "",
     description: initial?.description ?? "",
     priceInput: initial !== undefined ? formatBRL(initial.price) : "",
+    categoryId: initial?.category?.id ?? null,
     active: initial?.active ?? true,
   };
 }
@@ -98,7 +102,12 @@ export function ServiceFormDialog({
     try {
       if (mode === "create") {
         await createMutation.mutateAsync({
-          data: { name: values.name, description, price },
+          data: {
+            name: values.name,
+            description,
+            price,
+            categoryId: values.categoryId,
+          },
         });
         notify({ severity: "success", message: "Serviço criado" });
       } else if (initial) {
@@ -108,12 +117,16 @@ export function ServiceFormDialog({
             name: values.name,
             description,
             price,
+            categoryId: values.categoryId,
             active: values.active,
           },
         });
         notify({ severity: "success", message: "Serviço atualizado" });
       }
-      await queryClient.invalidateQueries({ queryKey: getServicesQueryKey() });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: getServicesQueryKey() }),
+        queryClient.invalidateQueries({ queryKey: getCategoriesQueryKey() }),
+      ]);
       onClose();
     } catch {
       notify({ severity: "error", message: "Erro ao salvar serviço" });
@@ -141,6 +154,12 @@ export function ServiceFormDialog({
               label="Descrição"
               multiline
               minRows={2}
+              fullWidth
+            />
+            <RHFCategorySelect
+              control={control}
+              name="categoryId"
+              label="Categoria"
               fullWidth
             />
             <RHFCurrencyField

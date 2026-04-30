@@ -53,12 +53,14 @@ export async function createTestService(data: {
   price?: number;
   active?: boolean;
   description?: string | null;
+  categoryId?: string | null;
 }) {
   return getTestPrisma().service.create({
     data: {
       price: 100,
       active: true,
       description: null,
+      categoryId: null,
       ...data,
     },
   });
@@ -106,6 +108,20 @@ export async function createTestSpecificPrice(data: {
   price: number;
 }) {
   return getTestPrisma().specificPrice.create({ data });
+}
+
+export function testCategoryName(tag: string): string {
+  return `[TEST]-${tag}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+}
+
+export async function createTestCategory(data: { name: string }) {
+  return getTestPrisma().category.create({ data });
+}
+
+export async function cleanupTestCategories() {
+  await getTestPrisma().category.deleteMany({
+    where: { name: { startsWith: "[TEST]-" } },
+  });
 }
 
 export async function resetLabInfo() {

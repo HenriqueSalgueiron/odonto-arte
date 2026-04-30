@@ -1,17 +1,22 @@
+import { randomUUID } from "node:crypto";
 import { describe, it, expect, afterAll, afterEach } from "vitest";
 import {
   authHeaderFor,
   buildTestApp,
+  cleanupTestCategories,
   cleanupTestServices,
   cleanupTestUsers,
+  createTestCategory,
   createTestUser,
   getTestPrisma,
+  testCategoryName,
   testEmail,
   testServiceName,
 } from "@/__tests__/helpers.js";
 
 afterEach(async () => {
   await cleanupTestServices();
+  await cleanupTestCategories();
   await cleanupTestUsers();
 });
 
@@ -114,6 +119,49 @@ describe("POST /services", () => {
     });
 
     expect(res.statusCode).toBe(401);
+    await app.close();
+  });
+
+  it("cria com categoryId e retorna a categoria expandida", async () => {
+    const user = await createTestUser({ email: testEmail("svc"), password: "p" });
+    const cat = await createTestCategory({ name: testCategoryName("cat") });
+
+    const { app } = await buildTestApp();
+    const headers = await authHeaderFor(user.id);
+
+    const res = await app.inject({
+      method: "POST",
+      url: "/services",
+      headers,
+      payload: { name: testServiceName("with-cat"), price: 100, categoryId: cat.id },
+    });
+
+    expect(res.statusCode).toBe(201);
+    expect(res.json().category).toEqual({ id: cat.id, name: cat.name });
+
+    await app.close();
+  });
+
+  it("retorna 400 quando categoryId não existe", async () => {
+    const user = await createTestUser({ email: testEmail("svc"), password: "p" });
+
+    const { app } = await buildTestApp();
+    const headers = await authHeaderFor(user.id);
+
+    const res = await app.inject({
+      method: "POST",
+      url: "/services",
+      headers,
+      payload: {
+        name: testServiceName("ghost-cat"),
+        price: 100,
+        categoryId: randomUUID(),
+      },
+    });
+
+    expect(res.statusCode).toBe(400);
+    expect(res.json().error).toBe("category_not_found");
+
     await app.close();
   });
 });

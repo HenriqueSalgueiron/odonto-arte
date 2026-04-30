@@ -131,6 +131,9 @@ export function ServicesListPage() {
                 <TableCell sx={{ display: { xs: "none", sm: "table-cell" } }}>
                   Descrição
                 </TableCell>
+                <TableCell sx={{ display: { xs: "none", sm: "table-cell" } }}>
+                  Categoria
+                </TableCell>
                 <TableCell>Preço</TableCell>
                 <TableCell>Status</TableCell>
                 <TableCell align="right">Ações</TableCell>
@@ -141,6 +144,9 @@ export function ServicesListPage() {
                 ? Array.from({ length: 3 }).map((_, i) => (
                     <TableRow key={`skeleton-${i}`}>
                       <TableCell>
+                        <Skeleton />
+                      </TableCell>
+                      <TableCell sx={{ display: { xs: "none", sm: "table-cell" } }}>
                         <Skeleton />
                       </TableCell>
                       <TableCell sx={{ display: { xs: "none", sm: "table-cell" } }}>
@@ -161,7 +167,7 @@ export function ServicesListPage() {
 
               {!isLoading && filtered.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5}>
+                  <TableCell colSpan={6}>
                     <Box sx={{ textAlign: "center", py: 3 }}>
                       <Typography color="text.secondary">
                         {query
@@ -181,6 +187,17 @@ export function ServicesListPage() {
                   <TableCell>{service.name}</TableCell>
                   <TableCell sx={{ display: { xs: "none", sm: "table-cell" } }}>
                     {service.description ?? "—"}
+                  </TableCell>
+                  <TableCell sx={{ display: { xs: "none", sm: "table-cell" } }}>
+                    {service.category ? (
+                      <Chip
+                        label={service.category.name}
+                        size="small"
+                        variant="outlined"
+                      />
+                    ) : (
+                      <Typography color="text.secondary">—</Typography>
+                    )}
                   </TableCell>
                   <TableCell>{formatBRL(service.price)}</TableCell>
                   <TableCell>

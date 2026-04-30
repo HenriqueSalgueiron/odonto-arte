@@ -26,6 +26,7 @@ export const getServiceRoute: FastifyPluginAsyncZod = async (app) => {
     async (request, reply) => {
       const service = await app.prisma.service.findUnique({
         where: { id: request.params.id },
+        include: { category: { select: { id: true, name: true } } },
       });
       if (!service) {
         return reply.code(404).send({ error: "service_not_found" });

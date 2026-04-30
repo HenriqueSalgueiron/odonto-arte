@@ -37,13 +37,26 @@ model Service {
   description String?
   price       Decimal  @db.Decimal(10, 2)
   active      Boolean  @default(true)
+  categoryId  String?  @map("category_id")
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
+  category       Category?          @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   specificPrices SpecificPrice[]
   orderItems     ServiceOrderItem[]
 
   @@map("services")
+}
+
+model Category {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  services Service[]
+
+  @@map("categories")
 }
 
 model Dentist {

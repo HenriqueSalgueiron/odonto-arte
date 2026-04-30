@@ -1,4 +1,5 @@
 import type { FastifyPluginAsyncZod } from "fastify-type-provider-zod";
+import { Prisma } from "@prisma/client";
 import {
   createServiceBodySchema,
   serviceSchema,
@@ -18,20 +19,34 @@ export const createServiceRoute: FastifyPluginAsyncZod = async (app) => {
         body: createServiceBodySchema,
         response: {
           201: serviceSchema,
+          400: errorResponseSchema,
           401: errorResponseSchema,
         },
       },
     },
     async (request, reply) => {
-      const { name, description, price } = request.body;
-      const service = await app.prisma.service.create({
-        data: {
-          name,
-          description: description ?? null,
-          price,
-        },
-      });
-      return reply.code(201).send(serializeService(service));
+      const { name, description, price, categoryId } = request.body;
+
+      try {
+        const service = await app.prisma.service.create({
+          data: {
+            name,
+            description: description ?? null,
+            price,
+            categoryId: categoryId ?? null,
+          },
+          include: { category: { select: { id: true, name: true } } },
+        });
+        return reply.code(201).send(serializeService(service));
+      } catch (err) {
+        if (
+          err instanceof Prisma.PrismaClientKnownRequestError &&
+          err.code === "P2003"
+        ) {
+          return reply.code(400).send({ error: "category_not_found" });
+        }
+        throw err;
+      }
     },
   );
 };

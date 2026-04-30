@@ -29,6 +29,7 @@ export const listServicesRoute: FastifyPluginAsyncZod = async (app) => {
       const services = await app.prisma.service.findMany({
         where: includeInactive ? {} : { active: true },
         orderBy: { name: "asc" },
+        include: { category: { select: { id: true, name: true } } },
       });
       return reply.code(200).send({ items: services.map(serializeService) });
     },
