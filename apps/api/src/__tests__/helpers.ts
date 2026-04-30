@@ -70,6 +70,36 @@ export async function cleanupTestServices() {
   });
 }
 
+export function testDentistName(tag: string): string {
+  return `[TEST]-${tag}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+}
+
+export async function createTestDentist(data: {
+  name: string;
+  cro?: string | null;
+  phone?: string | null;
+  email?: string | null;
+  notes?: string | null;
+  active?: boolean;
+}) {
+  return getTestPrisma().dentist.create({
+    data: {
+      cro: null,
+      phone: null,
+      email: null,
+      notes: null,
+      active: true,
+      ...data,
+    },
+  });
+}
+
+export async function cleanupTestDentists() {
+  await getTestPrisma().dentist.deleteMany({
+    where: { name: { startsWith: "[TEST]-" } },
+  });
+}
+
 export async function authHeaderFor(
   userId: string,
 ): Promise<{ Authorization: string }> {
