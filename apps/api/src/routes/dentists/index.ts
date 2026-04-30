@@ -4,6 +4,7 @@ import { getDentistRoute } from "@/routes/dentists/get.js";
 import { createDentistRoute } from "@/routes/dentists/create.js";
 import { updateDentistRoute } from "@/routes/dentists/update.js";
 import { deleteDentistRoute } from "@/routes/dentists/delete.js";
+import { dentistPricesRoutes } from "@/routes/dentists/prices/index.js";
 
 export const dentistsRoutes: FastifyPluginAsync = async (app) => {
   await app.register(listDentistsRoute);
@@ -11,4 +12,5 @@ export const dentistsRoutes: FastifyPluginAsync = async (app) => {
   await app.register(createDentistRoute);
   await app.register(updateDentistRoute);
   await app.register(deleteDentistRoute);
+  await app.register(dentistPricesRoutes, { prefix: "/:dentistId/prices" });
 };

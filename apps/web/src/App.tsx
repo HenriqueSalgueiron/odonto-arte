@@ -6,6 +6,7 @@ import LoginPage from "@/pages/Login";
 import HomePage from "@/pages/Home";
 import ServicesListPage from "@/pages/Services";
 import DentistsListPage from "@/pages/Dentists";
+import DentistPricesPage from "@/pages/DentistPrices";
 
 function App() {
   const navigate = useNavigate();
@@ -23,6 +24,7 @@ function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/services" element={<ServicesListPage />} />
         <Route path="/dentists" element={<DentistsListPage />} />
+        <Route path="/dentists/:id/prices" element={<DentistPricesPage />} />
       </Route>
     </Routes>
   );

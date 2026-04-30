@@ -100,6 +100,14 @@ export async function cleanupTestDentists() {
   });
 }
 
+export async function createTestSpecificPrice(data: {
+  dentistId: string;
+  serviceId: string;
+  price: number;
+}) {
+  return getTestPrisma().specificPrice.create({ data });
+}
+
 export async function authHeaderFor(
   userId: string,
 ): Promise<{ Authorization: string }> {

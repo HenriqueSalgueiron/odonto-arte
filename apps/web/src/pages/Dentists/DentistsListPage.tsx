@@ -22,6 +22,8 @@ import {
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
+import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
+import { useNavigate } from "react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   useDeleteDentistsId,
@@ -45,6 +47,7 @@ export function DentistsListPage() {
 
   const { notify } = useNotification();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   const { data, isLoading, isError } = useGetDentists(
     showInactive ? { includeInactive: "true" } : undefined,
@@ -202,6 +205,14 @@ export function DentistsListPage() {
                     )}
                   </TableCell>
                   <TableCell align="right">
+                    {dentist.active ? (
+                      <IconButton
+                        aria-label={`Preços de ${dentist.name}`}
+                        onClick={() => navigate(`/dentists/${dentist.id}/prices`)}
+                      >
+                        <AttachMoneyIcon />
+                      </IconButton>
+                    ) : null}
                     <IconButton
                       aria-label={`Editar ${dentist.name}`}
                       onClick={() => openEdit(dentist)}

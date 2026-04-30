@@ -36,6 +36,15 @@ type FakeDentist = {
   updatedAt: string;
 };
 
+type FakeSpecificPrice = {
+  id: string;
+  dentistId: string;
+  serviceId: string;
+  price: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
 const NOW = new Date("2026-04-28T12:00:00.000Z").toISOString();
 
 export const fakeServicesDb: { items: FakeService[] } = { items: [] };
@@ -75,6 +84,29 @@ export function makeFakeDentist(
     email: overrides.email ?? null,
     notes: overrides.notes ?? null,
     active: overrides.active ?? true,
+    createdAt: overrides.createdAt ?? NOW,
+    updatedAt: overrides.updatedAt ?? NOW,
+  };
+}
+
+export const fakeSpecificPricesDb: { items: FakeSpecificPrice[] } = { items: [] };
+
+export function resetFakeSpecificPricesDb(items: FakeSpecificPrice[] = []) {
+  fakeSpecificPricesDb.items = items.map((p) => ({ ...p }));
+}
+
+export function makeFakeSpecificPrice(
+  overrides: Partial<FakeSpecificPrice> & {
+    dentistId: string;
+    serviceId: string;
+    price: number;
+  },
+): FakeSpecificPrice {
+  return {
+    id: overrides.id ?? crypto.randomUUID(),
+    dentistId: overrides.dentistId,
+    serviceId: overrides.serviceId,
+    price: overrides.price,
     createdAt: overrides.createdAt ?? NOW,
     updatedAt: overrides.updatedAt ?? NOW,
   };
@@ -139,6 +171,86 @@ export const handlers = [
       active: false,
       updatedAt: NOW,
     };
+    return new HttpResponse(null, { status: 204 });
+  }),
+
+  http.get(`${API_URL}/dentists/:dentistId/prices/`, ({ params }) => {
+    const dentistId = params.dentistId as string;
+    const dentist = fakeDentistsDb.items.find((d) => d.id === dentistId);
+    if (!dentist) {
+      return HttpResponse.json({ error: "dentist_not_found" }, { status: 404 });
+    }
+    const overrideByServiceId = new Map<string, number>();
+    for (const o of fakeSpecificPricesDb.items.filter(
+      (p) => p.dentistId === dentistId,
+    )) {
+      overrideByServiceId.set(o.serviceId, o.price);
+    }
+    const items = fakeServicesDb.items
+      .filter((s) => s.active)
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .map((s) => {
+        const tablePrice = s.price;
+        const specificPrice = overrideByServiceId.get(s.id) ?? null;
+        return {
+          serviceId: s.id,
+          serviceName: s.name,
+          tablePrice,
+          specificPrice,
+          effectivePrice: specificPrice ?? tablePrice,
+        };
+      });
+    return HttpResponse.json({ items });
+  }),
+  http.put(
+    `${API_URL}/dentists/:dentistId/prices/:serviceId`,
+    async ({ params, request }) => {
+      const dentistId = params.dentistId as string;
+      const serviceId = params.serviceId as string;
+      const dentist = fakeDentistsDb.items.find((d) => d.id === dentistId);
+      if (!dentist) {
+        return HttpResponse.json({ error: "dentist_not_found" }, { status: 404 });
+      }
+      const service = fakeServicesDb.items.find((s) => s.id === serviceId);
+      if (!service) {
+        return HttpResponse.json({ error: "service_not_found" }, { status: 404 });
+      }
+      const body = (await request.json()) as { price: number };
+      const idx = fakeSpecificPricesDb.items.findIndex(
+        (p) => p.dentistId === dentistId && p.serviceId === serviceId,
+      );
+      if (idx === -1) {
+        const created = makeFakeSpecificPrice({
+          dentistId,
+          serviceId,
+          price: body.price,
+        });
+        fakeSpecificPricesDb.items.push(created);
+        return HttpResponse.json(created);
+      }
+      const updated = {
+        ...fakeSpecificPricesDb.items[idx],
+        price: body.price,
+        updatedAt: NOW,
+      };
+      fakeSpecificPricesDb.items[idx] = updated;
+      return HttpResponse.json(updated);
+    },
+  ),
+  http.delete(`${API_URL}/dentists/:dentistId/prices/:serviceId`, ({ params }) => {
+    const dentistId = params.dentistId as string;
+    const serviceId = params.serviceId as string;
+    const dentist = fakeDentistsDb.items.find((d) => d.id === dentistId);
+    if (!dentist) {
+      return HttpResponse.json({ error: "dentist_not_found" }, { status: 404 });
+    }
+    const service = fakeServicesDb.items.find((s) => s.id === serviceId);
+    if (!service) {
+      return HttpResponse.json({ error: "service_not_found" }, { status: 404 });
+    }
+    fakeSpecificPricesDb.items = fakeSpecificPricesDb.items.filter(
+      (p) => !(p.dentistId === dentistId && p.serviceId === serviceId),
+    );
     return new HttpResponse(null, { status: 204 });
   }),
 

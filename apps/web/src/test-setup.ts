@@ -2,7 +2,11 @@ import "@testing-library/jest-dom/vitest";
 import { afterAll, afterEach, beforeAll, beforeEach } from "vitest";
 import { server } from "@/mocks/server";
 import { useAuthStore } from "@/stores/authStore";
-import { resetFakeDentistsDb, resetFakeServicesDb } from "@/mocks/handlers";
+import {
+  resetFakeDentistsDb,
+  resetFakeServicesDb,
+  resetFakeSpecificPricesDb,
+} from "@/mocks/handlers";
 
 beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
 afterEach(() => server.resetHandlers());
@@ -18,4 +22,5 @@ beforeEach(() => {
   });
   resetFakeServicesDb();
   resetFakeDentistsDb();
+  resetFakeSpecificPricesDb();
 });

@@ -1,4 +1,5 @@
 import { describe, it, expect } from "vitest";
+import { Route, Routes } from "react-router";
 import { http, HttpResponse } from "msw";
 import userEvent from "@testing-library/user-event";
 import { renderWithProviders, screen, waitFor, within } from "@/test-utils";
@@ -168,5 +169,52 @@ describe("DentistsListPage", () => {
     expect(
       await screen.findByText(/nenhum dentista cadastrado/i),
     ).toBeInTheDocument();
+  });
+
+  it("clicar no ícone Preços de dentista ativo navega para /dentists/:id/prices", async () => {
+    authenticate();
+    fakeDentistsDb.items = [
+      makeFakeDentist({ id: "dent-p", name: "Dr. Silva", active: true }),
+    ];
+
+    renderWithProviders(
+      <Routes>
+        <Route path="/dentists" element={<DentistsListPage />} />
+        <Route
+          path="/dentists/:id/prices"
+          element={<div>Página de preços</div>}
+        />
+      </Routes>,
+      { initialEntries: ["/dentists"] },
+    );
+
+    await screen.findByText("Dr. Silva");
+
+    const user = userEvent.setup();
+    await user.click(
+      screen.getByRole("button", { name: /preços de dr\. silva/i }),
+    );
+
+    expect(await screen.findByText(/página de preços/i)).toBeInTheDocument();
+  });
+
+  it("não mostra ícone Preços para dentista inativo", async () => {
+    authenticate();
+    fakeDentistsDb.items = [
+      makeFakeDentist({ id: "dent-off", name: "Dr. Off", active: false }),
+    ];
+
+    renderWithProviders(<DentistsListPage />, {
+      initialEntries: ["/dentists"],
+    });
+
+    // Toggle para ver inativos
+    const user = userEvent.setup();
+    await user.click(screen.getByLabelText(/mostrar inativos/i));
+
+    await screen.findByText("Dr. Off");
+    expect(
+      screen.queryByRole("button", { name: /preços de dr\. off/i }),
+    ).not.toBeInTheDocument();
   });
 });
