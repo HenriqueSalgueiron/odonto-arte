@@ -61,16 +61,33 @@ Em fases posteriores, substitui também o controle em papel das ordens de servi�
 - Interface mostrando para um dentista quais serviços têm preço próprio e quais usam o padrão.
 - Permitir definir/remover preço específico facilmente.
 
-**Ajuste global de preços**
-- Aplicar percentual de aumento (ou redução) em todos os serviços de uma vez (ex: "+8% em tudo").
-- Confirmação com preview do antes/depois antes de aplicar.
-- Escopo: o ajuste afeta apenas preços-tabela. Preços específicos por dentista permanecem inalterados (a usuária ajusta caso a caso se quiser). Documentar isso na UI.
+**Configurações do laboratório**
+- Singleton (modelo `LabInfo`, uma única linha em banco) com os campos: nome do laboratório, técnico responsável, CRO do técnico, telefone, email.
+- Nome do laboratório vem pré-populado (`"OdontoArte"`) e não é editável pela UI. Os demais campos são editados pela usuária.
+- Todos os campos são obrigatórios para liberar a exportação de PDF (incluindo o nome, que já nasce preenchido).
+- Editado em página `/settings`. Header global com navegação (Home, Serviços, Dentistas, Configurações). Aparece em todas as rotas autenticadas.
+
+**Categorias de serviço**
+- Modelo `Category` com `name` único. Nome `"Diversos"` (case-insensitive) é reservado e bloqueado para evitar colisão com o bucket virtual descrito abaixo.
+- `Service.categoryId` é opcional. Serviços sem categoria caem em um bucket virtual `"Diversos"` no PDF (renderizado sempre por último; suprimido quando vazio).
+- CRUD inline no formulário do serviço: select de categorias com opção "+ Nova categoria" e ícone para excluir/renomear na lista.
+- Deletar categoria não bloqueia. Serviços associados voltam a `categoryId = null`. Confirmação avisa quantos serviços serão afetados.
+- Categoria não tem campo de ordem persistido — a ordem na exportação vive no template de exportação (ver abaixo).
 
 **Exportação de PDF (gerada no frontend)**
-- Exportar tabela de preços geral (todos os serviços com preço-tabela).
-- Exportar tabela de preços de um dentista específico (preço efetivo: específico se houver, tabela caso contrário).
-- PDF com cabeçalho do laboratório (nome, contato), data de emissão, formatação limpa.
-- Usar react-pdf (@react-pdf/renderer) no frontend.
+- Exportar tabela de preços geral (todos os serviços ativos) ou tabela de um dentista específico (preço efetivo: específico se houver, tabela caso contrário).
+- Em ambos os casos, serviços agrupados por categoria. Bucket virtual `"Diversos"` (serviços com `categoryId = null`) renderizado por último.
+- Cabeçalho do laboratório (nome, técnico responsável + CRO, telefone, email) e data de emissão. Formatação inspirada na planilha em uso hoje.
+- Modal `ExportPdfDialog` aparece antes do download, com:
+  - Drag-and-drop pra ordenar as categorias existentes. `"Diversos"` fica fixo no final (não arrastável).
+  - Lista de campos de texto pra observações, com botão "+" pra adicionar e ícone para remover cada item. Campos vazios após `trim()` são descartados.
+  - Botão "Exportar".
+- Singleton `ExportTemplate` em banco guarda a última ordenação de categorias e a última lista de observações. O modal abre populado com o template salvo:
+  - Categorias criadas após o último template salvo entram ao final da lista de arrastáveis (antes de `"Diversos"`), ordenadas alfabeticamente.
+  - Categorias deletadas são filtradas silenciosamente.
+- Ao confirmar exportar: se houve mudança vs. template salvo, salva antes de gerar o PDF; senão, gera o PDF direto.
+- Se `LabInfo` não estiver totalmente preenchido, o modal abre exibindo apenas um aviso "Configure as informações do laboratório antes de exportar" + link para `/settings`. O botão de exportar fica indisponível até que esteja completo.
+- Usar react-pdf (`@react-pdf/renderer`) no frontend.
 
 **PWA**
 - Manifest + service worker básico via vite-plugin-pwa.
@@ -89,6 +106,7 @@ Substituir o controle em papel das fichas de serviço.
 
 ### Fase 3+ — Possíveis evoluções (apenas registrar)
 
+- **Ajuste global de preços** (adiado do MVP). Aplicar percentual de aumento ou redução em todos os serviços de uma vez (ex: "+8% em tudo"), com confirmação por preview do antes/depois antes de aplicar. Escopo: afeta apenas preços-tabela; preços específicos por dentista permanecem inalterados (a usuária ajusta caso a caso). Documentar isso na UI quando implementar.
 - Envio automático da tabela de preços por email para o dentista via **AWS SES** (Simple Email Service). Configurar domínio verificado, templates de email, envio transacional.
 - Envio por WhatsApp (avaliar integrações disponíveis).
 - Relatórios financeiros (faturamento por dentista, serviço, período).
@@ -290,9 +308,11 @@ model Service {
   description String?
   price       Decimal  @db.Decimal(10, 2)  // preço-tabela em BRL
   active      Boolean  @default(true)
+  categoryId  String?  @map("category_id")
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
+  category       Category?          @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   specificPrices SpecificPrice[]
   orderItems     ServiceOrderItem[]    // Fase 2
 
@@ -329,6 +349,44 @@ model SpecificPrice {
 
   @@unique([dentistId, serviceId])  // um preço específico por par dentista-serviço
   @@map("specific_prices")
+}
+
+model Category {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  services Service[]
+
+  @@map("categories")
+}
+
+// LabInfo é singleton: só pode existir uma única linha. Backend garante.
+// Campos editáveis ficam opcionais no schema para suportar o estado "ainda não configurado"
+// imediatamente após a migration/seed. A UI exige todos preenchidos antes de liberar exportação.
+model LabInfo {
+  id                       String   @id @default(uuid())
+  name                     String   @default("OdontoArte")
+  responsibleTechnician    String?  @map("responsible_technician")
+  responsibleTechnicianCro String?  @map("responsible_technician_cro")
+  phone                    String?
+  email                    String?
+  updatedAt                DateTime @updatedAt @map("updated_at")
+
+  @@map("lab_info")
+}
+
+// ExportTemplate é singleton: guarda a última configuração usada na exportação de PDF.
+// Criado on-demand na primeira exportação. categoryOrder armazena UUIDs de Category;
+// observations armazena os textos das observações já com trim aplicado, sem strings vazias.
+model ExportTemplate {
+  id            String   @id @default(uuid())
+  categoryOrder String[] @map("category_order")
+  observations  String[]
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@map("export_templates")
 }
 
 // ========================
@@ -391,6 +449,9 @@ model OrderAttachment {
 Notas sobre a modelagem:
 - Todas as tabelas usam `@@map` para nomes em snake_case no banco (convenção SQL), enquanto o Prisma Client mantém camelCase no código TypeScript.
 - `SpecificPrice` tem constraint unique em `[dentistId, serviceId]` — só pode existir um preço negociado por par dentista-serviço.
+- `Service.categoryId` é opcional + `onDelete: SetNull`. Deletar uma categoria não apaga serviços; eles voltam a ficar sem categoria (caem no bucket virtual `"Diversos"` no PDF).
+- `Category.name` é único e o nome `"Diversos"` (case-insensitive) é bloqueado nas rotas POST/PUT — reservado para o bucket virtual de serviços sem categoria. Sem essa reserva, dois grupos chamados "Diversos" colidiriam no PDF.
+- `LabInfo` e `ExportTemplate` são singletons (uma única linha cada). O backend garante isso nas rotas: não há POST público; existem apenas GET e PUT que sempre operam na linha única. Seed cria a linha do `LabInfo` com `name = "OdontoArte"` e demais campos null.
 - `ServiceOrderItem.priceSnapshot` é um snapshot: grava o preço que valia quando o trabalho entrou, mesmo que o preço mude depois. Essencial para histórico financeiro correto.
 - Campo `active` em Service e Dentist permite soft delete (desativar sem perder histórico).
 - Refresh tokens NÃO vivem no Postgres — estão no Redis (Upstash) com TTL automático. O Postgres guarda apenas dados de domínio persistentes.
@@ -659,41 +720,64 @@ Testes são escritos JUNTO com cada feature, não depois. Cada etapa que envolve
 - Testes de componente frontend: exibe preço correto (específico vs tabela), permite editar/remover.
 - Testes de hook (se houver hook customizado de preço efetivo).
 
-### Etapa 9 — Ajuste Global de Preços
-- Backend: rota que recebe percentual e retorna preview (antes/depois) + rota que aplica o ajuste.
-- Testes unitários backend: cálculo de percentual sobre preços (arredondamento, edge cases).
-- Testes de integração backend: preview retorna valores corretos, aplicar ajuste atualiza todos os preços-tabela, preços específicos permanecem inalterados.
+### Etapa 9 — Ajuste Global de Preços (adiada para Fase 3)
+Movida para a Fase 3 (ver § 3). Não faz parte do MVP. Numeração das etapas seguintes mantida para preservar referências.
+
+### Etapa 10 — Configurações do laboratório
+- Backend: model `LabInfo` (singleton) com os campos `name`, `responsibleTechnician`, `responsibleTechnicianCro`, `phone`, `email`. Migration cria a linha inicial com `name = "OdontoArte"` e demais campos null. Rotas: GET `/lab-info` (sempre retorna a linha) e PUT `/lab-info` (atualiza). Schema Zod do PUT exige todos os campos preenchidos.
+- Testes de integração backend: GET retorna a linha após seed/migration, PUT valida obrigatórios, GET após PUT retorna o dado atualizado.
 - Regenerar Kubb.
-- Frontend: tela com input de percentual, tabela de preview, botão de confirmação.
-- Testes de componente frontend: preview exibe antes/depois corretamente, confirmação dispara request.
+- Frontend: header global com navegação (Home, Serviços, Dentistas, Configurações), aplicado às rotas dentro de `ProtectedRoute`. Página `/settings` com formulário (RHFTextField + RHFPhoneField). Hook `useLabInfo` (wrapper sobre o gerado) que expõe `isConfigured` (todos os campos preenchidos).
+- Testes de componente frontend: formulário valida campos obrigatórios, salva e exibe toast de sucesso, header navega entre rotas.
+- Testes de hook: `useLabInfo` deriva `isConfigured` corretamente para os estados não-carregado, parcial e completo.
 
-### Etapa 10 — Exportação de PDF
-- Implementar geração de PDF no frontend com react-pdf.
-- Template com cabeçalho do laboratório, tabela de preços, data de emissão.
-- Dois modos: tabela geral e tabela por dentista.
-- Testes unitários: funções que montam os dados para o PDF.
+### Etapa 11 — Categorias de serviço
+- Backend: model `Category` (id, name único, timestamps). Adicionar `categoryId` opcional em `Service` com `onDelete: SetNull`. Rotas: CRUD completo de Category (POST, GET list, PUT, DELETE). Bloquear nome `"Diversos"` (case-insensitive) na criação/edição. DELETE não bloqueia; resposta inclui count de serviços que serão desassociados.
+- Service ganha `categoryId?` no schema Zod das rotas POST/PUT. GET responde com a categoria expandida.
+- Testes de integração backend: CRUD de category, bloqueio de "Diversos", DELETE move serviços para `categoryId = null`, validação ao criar/editar serviço com categoryId inválido.
+- Regenerar Kubb.
+- Frontend: select de categoria no `ServiceFormDialog` com opção "+ Nova categoria" inline (dialog secundário simples) e ações de excluir/renomear na própria lista de seleção. Listagem de serviços ganha indicação visual da categoria (chip).
+- Testes de componente frontend: criação de categoria inline, atribuição/remoção de categoria em serviço, confirmação de exclusão de categoria mostra count de serviços afetados.
 
-### Etapa 11 — Testes E2E (Cypress)
+### Etapa 12 — Exportação de PDF
+- Backend: model `ExportTemplate` (singleton) com `categoryOrder: String[]` (UUIDs de Category) e `observations: String[]`. Rotas: GET `/export-template` (cria a linha vazia on-demand se não existir) e PUT `/export-template`. PUT aplica `trim()` em cada observação e descarta strings vazias antes de gravar.
+- Testes de integração backend: GET inicial retorna template vazio, PUT salva, PUT descarta observações vazias/whitespace-only, GET subsequente retorna o salvo.
+- Regenerar Kubb.
+- Frontend: instalar `@react-pdf/renderer` e uma lib leve de drag-and-drop (ex: `@dnd-kit/core` + `@dnd-kit/sortable`).
+- Componente `ExportPdfDialog` reutilizável (usado tanto na tabela geral quanto na por dentista):
+  - Drag-and-drop pra ordenar categorias. `"Diversos"` fixo no final, não arrastável.
+  - Lista editável de observações: campo de texto + botão "+" pra adicionar item, ícone "x" pra remover item.
+  - Botão "Exportar". Comparação rasa entre estado do dialog e template salvo: se diferente, salva antes de gerar; se igual, só gera.
+  - Se `LabInfo` não está totalmente preenchido, dialog mostra apenas aviso "Configure as informações do laboratório antes de exportar" + link para `/settings`, e desabilita "Exportar".
+- Templates `<Document>` em `src/lib/pdf/`:
+  - `GeneralPriceListDocument` — tabela geral, agrupada por categoria, cabeçalho com dados do laboratório, observações no rodapé.
+  - `DentistPriceListDocument` — preço efetivo por dentista, mesma estrutura.
+- Funções puras testáveis: `buildSectionsByCategory(services, categoryOrder)` (resolve ordem; categorias novas no fim em ordem alfabética; "Diversos" sempre por último), `filename(date, dentistName?)`, `downloadPdf(doc, name)`.
+- Testes unitários: builders de dados (categorias na ordem do template, "Diversos" no final, categorias novas após template entram alfabeticamente, categorias deletadas filtradas), filename builder.
+- Testes de componente frontend: dialog popula com template salvo, drag-and-drop reordena, adicionar/remover observação, lab não configurado mostra aviso, mudança no estado dispara PUT antes do download, ausência de mudança não dispara PUT.
+- Plugar botões "Exportar PDF" em `ServicesListPage` e `DentistPricesPage`.
+
+### Etapa 13 — Testes E2E (Cypress)
 - Configurar Cypress no projeto (apps/web/cypress/).
 - Configurar scripts para rodar backend + frontend em modo de teste.
 - Escrever suítes E2E dos fluxos principais:
   - Login com credenciais válidas e inválidas.
   - Criar serviço → verificar na listagem → editar → verificar alteração → excluir.
+  - Criar categoria → atrelar a serviço → verificar na listagem.
   - Criar dentista → definir preço específico → verificar preço efetivo.
-  - Ajuste global de preços: aplicar percentual → verificar que preços-tabela mudaram e preços específicos não.
-  - Exportar PDF (verificar que o download é disparado).
+  - Configurar laboratório → exportar PDF (geral) com observações e ordem custom → verificar download.
 
-### Etapa 12 — PWA
+### Etapa 14 — PWA
 - Configurar vite-plugin-pwa com manifest e ícones.
 - Testar instalação no celular.
 
-### Etapa 13 — Sentry
+### Etapa 15 — Sentry
 - Criar projetos no Sentry (um para frontend, um para backend).
 - Integrar @sentry/react no frontend.
 - Integrar @sentry/node no backend.
 - Verificar que erros aparecem no dashboard.
 
-### Etapa 14 — Docker + Deploy
+### Etapa 16 — Docker + Deploy
 - Escrever Dockerfile multi-stage para o backend.
 - Testar build local com `docker build`.
 - Configurar Fly.io (fly launch, fly secrets set).
@@ -706,11 +790,11 @@ Testes são escritos JUNTO com cada feature, não depois. Cada etapa que envolve
 - Deploy manual do frontend.
 - Testar fluxo completo em produção.
 
-### Etapa 15 — CI/CD
+### Etapa 17 — CI/CD
 - Configurar GitHub Actions: lint → build → testes unitários/hooks/componentes/integração → E2E (Cypress) → deploy backend → migrate → deploy frontend.
 - Build roda antes dos testes: se TypeScript não compilar, pipeline para imediatamente.
 - Testes E2E (Cypress) rodam em push na main apenas (mais lentos, validação final antes de deploy).
 - Verificar pipeline completo com um push na main.
 
-### Etapa 16 — README
+### Etapa 18 — README
 - Escrever README para o repositório: descrição do projeto, screenshots, stack, como rodar local, link da demo, roadmap (Fase 1 ✅, Fase 2 🚧, Fase 3 📋).
