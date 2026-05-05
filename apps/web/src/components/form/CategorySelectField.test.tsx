@@ -12,7 +12,7 @@ import {
 } from "@/mocks/handlers";
 import { useAuthStore } from "@/stores/authStore";
 import { FAKE_USER } from "@/mocks/handlers";
-import { RHFCategorySelect } from "@/components/form/RHFCategorySelect";
+import { CategorySelectField } from "@/components/form/CategorySelectField";
 
 function authenticate() {
   useAuthStore.getState().setTokens({ accessToken: "a", refreshToken: "r" });
@@ -21,13 +21,7 @@ function authenticate() {
 
 type FormValues = { categoryId: string | null };
 
-function Harness({
-  initialId = null,
-  onChange,
-}: {
-  initialId?: string | null;
-  onChange?: (value: string | null) => void;
-}) {
+function Harness({ initialId = null }: { initialId?: string | null }) {
   const { control, watch } = useForm<FormValues>({
     defaultValues: { categoryId: initialId },
   });
@@ -35,19 +29,12 @@ function Harness({
   return (
     <div>
       <span data-testid="current-value">{value ?? "null"}</span>
-      <RHFCategorySelect<FormValues>
+      <CategorySelectField<FormValues>
         control={control}
         name="categoryId"
         label="Categoria"
         fullWidth
       />
-      <button
-        type="button"
-        onClick={() => onChange?.(value)}
-        data-testid="probe"
-      >
-        probe
-      </button>
     </div>
   );
 }
@@ -58,7 +45,7 @@ beforeEach(() => {
   resetFakeServicesDb();
 });
 
-describe("RHFCategorySelect", () => {
+describe("CategorySelectField", () => {
   it("renderiza opções existentes e seleciona uma categoria", async () => {
     fakeCategoriesDb.items = [
       makeFakeCategory({ id: "cat-1", name: "Próteses" }),
@@ -67,9 +54,7 @@ describe("RHFCategorySelect", () => {
 
     renderWithProviders(<Harness />);
 
-    const trigger = screen.getByLabelText(/categoria/i, {
-      selector: "input",
-    });
+    const trigger = screen.getByLabelText(/categoria/i, { selector: "input" });
     const user = userEvent.setup();
     await user.click(trigger);
 
@@ -97,9 +82,7 @@ describe("RHFCategorySelect", () => {
     await user.type(input, "Próteses Removíveis");
     await user.click(screen.getByRole("button", { name: /criar categoria/i }));
 
-    await waitFor(() => {
-      expect(fakeCategoriesDb.items).toHaveLength(1);
-    });
+    await waitFor(() => expect(fakeCategoriesDb.items).toHaveLength(1));
     expect(fakeCategoriesDb.items[0].name).toBe("Próteses Removíveis");
 
     await waitFor(() =>
@@ -152,6 +135,31 @@ describe("RHFCategorySelect", () => {
     });
   });
 
+  it("limpa o valor do form quando a categoria selecionada é excluída", async () => {
+    fakeCategoriesDb.items = [
+      makeFakeCategory({ id: "cat-1", name: "Próteses" }),
+    ];
+
+    renderWithProviders(<Harness initialId="cat-1" />);
+
+    expect(screen.getByTestId("current-value").textContent).toBe("cat-1");
+
+    const user = userEvent.setup();
+    await user.click(screen.getByLabelText(/categoria/i, { selector: "input" }));
+
+    await user.click(
+      await screen.findByRole("button", { name: /excluir próteses/i }),
+    );
+
+    const dialog = await screen.findByRole("dialog");
+    await user.click(within(dialog).getByRole("button", { name: /excluir/i }));
+
+    await waitFor(() => expect(fakeCategoriesDb.items).toHaveLength(0));
+    await waitFor(() =>
+      expect(screen.getByTestId("current-value").textContent).toBe("null"),
+    );
+  });
+
   it("excluir confirma com count de serviços e remove a categoria", async () => {
     const cat = makeFakeCategory({ id: "cat-1", name: "Próteses" });
     fakeCategoriesDb.items = [cat];
@@ -177,8 +185,6 @@ describe("RHFCategorySelect", () => {
 
     await user.click(within(dialog).getByRole("button", { name: /excluir/i }));
 
-    await waitFor(() => {
-      expect(fakeCategoriesDb.items).toHaveLength(0);
-    });
+    await waitFor(() => expect(fakeCategoriesDb.items).toHaveLength(0));
   });
 });

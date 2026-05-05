@@ -39,7 +39,8 @@ describe("POST /categories", () => {
 
     expect(res.statusCode).toBe(201);
     const body = res.json();
-    expect(body).toMatchObject({ name, serviceCount: 0 });
+    expect(body).toMatchObject({ name });
+    expect(body.serviceCount).toBeUndefined();
     expect(typeof body.id).toBe("string");
 
     await app.close();

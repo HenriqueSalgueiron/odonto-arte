@@ -30,7 +30,6 @@ type FakeService = {
 type FakeCategory = {
   id: string;
   name: string;
-  serviceCount: number;
   createdAt: string;
   updatedAt: string;
 };
@@ -91,18 +90,14 @@ export function makeFakeCategory(
   return {
     id: overrides.id ?? crypto.randomUUID(),
     name: overrides.name,
-    serviceCount: overrides.serviceCount ?? 0,
     createdAt: overrides.createdAt ?? NOW,
     updatedAt: overrides.updatedAt ?? NOW,
   };
 }
 
-function recomputeCategoryServiceCounts() {
-  for (const c of fakeCategoriesDb.items) {
-    c.serviceCount = fakeServicesDb.items.filter(
-      (s) => s.category?.id === c.id,
-    ).length;
-  }
+function countServicesByCategory(categoryId: string): number {
+  return fakeServicesDb.items.filter((s) => s.category?.id === categoryId)
+    .length;
 }
 
 export const fakeDentistsDb: { items: FakeDentist[] } = { items: [] };
@@ -264,7 +259,6 @@ export const handlers = [
       category,
     });
     fakeServicesDb.items.push(created);
-    recomputeCategoryServiceCounts();
     return HttpResponse.json(created, { status: 201 });
   }),
   http.put(`${API_URL}/services/:id`, async ({ params, request }) => {
@@ -300,7 +294,6 @@ export const handlers = [
       updatedAt: NOW,
     };
     fakeServicesDb.items[idx] = updated;
-    recomputeCategoryServiceCounts();
     return HttpResponse.json(updated);
   }),
   http.delete(`${API_URL}/services/:id`, ({ params }) => {
@@ -317,19 +310,10 @@ export const handlers = [
   }),
 
   http.get(`${API_URL}/categories/`, () => {
-    recomputeCategoryServiceCounts();
-    const items = [...fakeCategoriesDb.items].sort((a, b) =>
-      a.name.localeCompare(b.name),
-    );
+    const items = [...fakeCategoriesDb.items]
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .map((c) => ({ ...c, serviceCount: countServicesByCategory(c.id) }));
     return HttpResponse.json({ items });
-  }),
-  http.get(`${API_URL}/categories/:id`, ({ params }) => {
-    recomputeCategoryServiceCounts();
-    const found = fakeCategoriesDb.items.find((c) => c.id === params.id);
-    if (!found) {
-      return HttpResponse.json({ error: "category_not_found" }, { status: 404 });
-    }
-    return HttpResponse.json(found);
   }),
   http.post(`${API_URL}/categories/`, async ({ request }) => {
     const body = (await request.json()) as { name?: string };

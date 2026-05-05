@@ -14,9 +14,12 @@ export const categoryNameSchema = z
 export const categorySchema = z.object({
   id: z.uuid(),
   name: z.string(),
-  serviceCount: z.number().int().nonnegative(),
   createdAt: z.iso.datetime(),
   updatedAt: z.iso.datetime(),
+});
+
+export const categoryListItemSchema = categorySchema.extend({
+  serviceCount: z.number().int().nonnegative(),
 });
 
 export const createCategoryBodySchema = z.object({
@@ -30,10 +33,11 @@ export const categoryIdParamsSchema = z.object({
 });
 
 export const listCategoriesResponseSchema = z.object({
-  items: z.array(categorySchema),
+  items: z.array(categoryListItemSchema),
 });
 
 export type Category = z.infer<typeof categorySchema>;
+export type CategoryListItem = z.infer<typeof categoryListItemSchema>;
 export type CreateCategoryBody = z.infer<typeof createCategoryBodySchema>;
 export type UpdateCategoryBody = z.infer<typeof updateCategoryBodySchema>;
 export type CategoryIdParams = z.infer<typeof categoryIdParamsSchema>;

@@ -21,7 +21,7 @@ import type { GetServices200 } from "@/generated";
 import { formatBRL, parseBRLInput } from "@/lib/formatters/currency";
 import { useNotification } from "@/components/NotificationProvider";
 import {
-  RHFCategorySelect,
+  CategorySelectField,
   RHFCurrencyField,
   RHFSwitch,
   RHFTextField,
@@ -156,7 +156,7 @@ export function ServiceFormDialog({
               minRows={2}
               fullWidth
             />
-            <RHFCategorySelect
+            <CategorySelectField
               control={control}
               name="categoryId"
               label="Categoria"

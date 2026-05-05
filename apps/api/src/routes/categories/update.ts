@@ -35,7 +35,6 @@ export const updateCategoryRoute: FastifyPluginAsyncZod = async (app) => {
         const category = await app.prisma.category.update({
           where: { id: request.params.id },
           data,
-          include: { _count: { select: { services: true } } },
         });
         return reply.code(200).send(serializeCategory(category));
       } catch (err) {
