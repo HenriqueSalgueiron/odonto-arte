@@ -19,6 +19,7 @@ import { servicesRoutes } from "@/routes/services/index.js";
 import { categoriesRoutes } from "@/routes/categories/index.js";
 import { dentistsRoutes } from "@/routes/dentists/index.js";
 import { labInfoRoutes } from "@/routes/lab-info/index.js";
+import { exportTemplateRoutes } from "@/routes/export-template/index.js";
 
 export type BuildAppOptions = {
   tokenStore?: TokenStore;
@@ -53,6 +54,7 @@ export async function buildApp(opts: BuildAppOptions = {}) {
   await app.register(categoriesRoutes, { prefix: "/categories" });
   await app.register(dentistsRoutes, { prefix: "/dentists" });
   await app.register(labInfoRoutes, { prefix: "/lab-info" });
+  await app.register(exportTemplateRoutes, { prefix: "/export-template" });
 
   return app;
 }

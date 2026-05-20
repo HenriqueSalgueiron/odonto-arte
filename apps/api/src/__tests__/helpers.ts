@@ -128,6 +128,10 @@ export async function resetLabInfo() {
   await getTestPrisma().labInfo.deleteMany({});
 }
 
+export async function resetExportTemplate() {
+  await getTestPrisma().exportTemplate.deleteMany({});
+}
+
 export async function authHeaderFor(
   userId: string,
 ): Promise<{ Authorization: string }> {

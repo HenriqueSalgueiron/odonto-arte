@@ -103,6 +103,15 @@ model LabInfo {
   @@map("lab_info")
 }
 
+model ExportTemplate {
+  id            String   @id @default(uuid())
+  categoryOrder String[] @default([]) @map("category_order")
+  observations  String[] @default([])
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@map("export_template")
+}
+
 // ========================
 // FASE 2 — Ordens de Serviço (modelar agora, implementar depois)
 // ========================
