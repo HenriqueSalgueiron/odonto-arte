@@ -1,5 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { http, HttpResponse } from "msw";
+import type { ReactElement } from "react";
+import type { DocumentProps } from "@react-pdf/renderer";
 import userEvent from "@testing-library/user-event";
 import { renderWithProviders, screen, waitFor } from "@/test-utils";
 import { server } from "@/mocks/server";
@@ -15,10 +17,14 @@ import {
   resetFakeServicesDb,
 } from "@/mocks/handlers";
 
-const downloadPdfMock = vi.fn(async () => {});
+const { downloadPdfMock } = vi.hoisted(() => ({
+  downloadPdfMock: vi.fn<
+    (doc: ReactElement<DocumentProps>, filename: string) => Promise<void>
+  >(async () => {}),
+}));
 
 vi.mock("@/lib/pdf/downloadPdf", () => ({
-  downloadPdf: (...args: unknown[]) => downloadPdfMock(...args),
+  downloadPdf: downloadPdfMock,
 }));
 
 import { ExportPdfDialog } from "@/components/ExportPdfDialog/ExportPdfDialog";

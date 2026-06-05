@@ -22,6 +22,7 @@ import {
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
+import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   useDeleteServicesId,
@@ -33,6 +34,7 @@ import { formatBRL } from "@/lib/formatters/currency";
 import { useNotification } from "@/components/NotificationProvider";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { ServiceFormDialog } from "@/pages/Services/ServiceFormDialog";
+import { ExportPdfDialog } from "@/components/ExportPdfDialog/ExportPdfDialog";
 
 type Service = GetServices200["items"][number];
 
@@ -42,6 +44,7 @@ export function ServicesListPage() {
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Service | undefined>(undefined);
   const [confirming, setConfirming] = useState<Service | null>(null);
+  const [exportOpen, setExportOpen] = useState(false);
 
   const { notify } = useNotification();
   const queryClient = useQueryClient();
@@ -91,9 +94,18 @@ export function ServicesListPage() {
         <Typography variant="h4" component="h1">
           Serviços
         </Typography>
-        <Button variant="contained" onClick={openCreate}>
-          Novo serviço
-        </Button>
+        <Stack direction="row" spacing={1}>
+          <Button
+            variant="outlined"
+            startIcon={<PictureAsPdfIcon />}
+            onClick={() => setExportOpen(true)}
+          >
+            Exportar PDF
+          </Button>
+          <Button variant="contained" onClick={openCreate}>
+            Novo serviço
+          </Button>
+        </Stack>
       </Stack>
 
       <Stack
@@ -233,6 +245,11 @@ export function ServicesListPage() {
         mode={editing ? "edit" : "create"}
         initial={editing}
         onClose={() => setFormOpen(false)}
+      />
+
+      <ExportPdfDialog
+        open={exportOpen}
+        onClose={() => setExportOpen(false)}
       />
 
       <ConfirmDialog

@@ -21,6 +21,8 @@ import {
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
+import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   getDentistsDentistidPricesQueryKey,
@@ -33,6 +35,7 @@ import { formatBRL } from "@/lib/formatters/currency";
 import { useNotification } from "@/components/NotificationProvider";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { DentistPriceFormDialog } from "@/pages/DentistPrices/DentistPriceFormDialog";
+import { ExportPdfDialog } from "@/components/ExportPdfDialog/ExportPdfDialog";
 
 type PriceRow = GetDentistsDentistidPrices200["items"][number];
 
@@ -42,6 +45,7 @@ export function DentistPricesPage() {
 
   const [editing, setEditing] = useState<PriceRow | null>(null);
   const [confirming, setConfirming] = useState<PriceRow | null>(null);
+  const [exportOpen, setExportOpen] = useState(false);
 
   const { notify } = useNotification();
   const queryClient = useQueryClient();
@@ -80,14 +84,43 @@ export function DentistPricesPage() {
           <ArrowBackIcon fontSize="small" />
           Voltar para dentistas
         </Link>
-        <Typography variant="h4" component="h1">
-          Preços por dentista
-        </Typography>
-        {dentistQuery.data ? (
-          <Typography variant="subtitle1" color="text.secondary">
-            {dentistQuery.data.name}
+        <Stack
+          direction={{ xs: "column", sm: "row" }}
+          justifyContent="space-between"
+          alignItems={{ xs: "flex-start", sm: "center" }}
+          spacing={2}
+        >
+          <Box>
+            <Typography variant="h4" component="h1">
+              Preços por dentista
+            </Typography>
+            {dentistQuery.data ? (
+              <Typography variant="subtitle1" color="text.secondary">
+                {dentistQuery.data.name}
+              </Typography>
+            ) : null}
+          </Box>
+          <Button
+            variant="outlined"
+            startIcon={<PictureAsPdfIcon />}
+            onClick={() => setExportOpen(true)}
+          >
+            Exportar PDF
+          </Button>
+        </Stack>
+        <Stack
+          direction="row"
+          spacing={0.5}
+          alignItems="center"
+          color="text.secondary"
+        >
+          <InfoOutlinedIcon fontSize="inherit" />
+          <Typography variant="caption" color="text.secondary">
+            O PDF gerado tem o mesmo formato da tabela geral. Quando este
+            dentista não tem preço personalizado para um serviço, o valor
+            exibido é o da tabela.
           </Typography>
-        ) : null}
+        </Stack>
       </Stack>
 
       {isError ? (
@@ -193,6 +226,12 @@ export function DentistPricesPage() {
           onClose={() => setEditing(null)}
         />
       ) : null}
+
+      <ExportPdfDialog
+        open={exportOpen}
+        onClose={() => setExportOpen(false)}
+        dentistId={dentistId}
+      />
 
       <ConfirmDialog
         open={confirming !== null}

@@ -83,7 +83,7 @@ Movida para a Fase 3 (ver `docs/PRODUCT.md` § 3). Não faz parte do MVP. Numera
 - Frontend: select de categoria no `ServiceFormDialog` com opção "+ Nova categoria" inline (dialog secundário simples) e ações de excluir/renomear na própria lista de seleção. Listagem de serviços ganha indicação visual da categoria (chip).
 - Testes de componente frontend: criação de categoria inline, atribuição/remoção de categoria em serviço, confirmação de exclusão de categoria mostra count de serviços afetados.
 
-## Etapa 12 — Exportação de PDF ⏳
+## Etapa 12 — Exportação de PDF ✅
 - Backend: model `ExportTemplate` (singleton) com `categoryOrder: String[]` (UUIDs de Category) e `observations: String[]`. Rotas: GET `/export-template` (cria a linha vazia on-demand se não existir) e PUT `/export-template`. PUT aplica `trim()` em cada observação e descarta strings vazias antes de gravar.
 - Testes de integração backend: GET inicial retorna template vazio, PUT salva, PUT descarta observações vazias/whitespace-only, GET subsequente retorna o salvo.
 - Regenerar Kubb.

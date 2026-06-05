@@ -90,9 +90,10 @@ export function ExportPdfDialog({ open, onClose, dentistId }: Props) {
 
   const orderedItems = useMemo(() => {
     const byId = new Map(categories.map((c) => [c.id, c]));
-    return localOrder
-      .map((id) => byId.get(id))
-      .filter((c): c is { id: string; name: string } => Boolean(c));
+    return localOrder.flatMap((id) => {
+      const cat = byId.get(id);
+      return cat ? [cat] : [];
+    });
   }, [localOrder, categories]);
 
   const isLoading =
@@ -158,7 +159,8 @@ export function ExportPdfDialog({ open, onClose, dentistId }: Props) {
       );
       await downloadPdf(doc, pdfFilename(new Date()));
       onClose();
-    } catch {
+    } catch (error) {
+      console.error("ExportPdfDialog: falha ao gerar PDF", error);
       notify({ severity: "error", message: "Erro ao gerar o PDF" });
     } finally {
       setIsExporting(false);
