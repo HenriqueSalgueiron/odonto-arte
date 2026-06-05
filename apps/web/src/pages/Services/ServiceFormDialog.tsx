@@ -142,6 +142,7 @@ export function ServiceFormDialog({
         <DialogContent>
           <Stack spacing={2} sx={{ mt: 1 }}>
             <RHFTextField
+              required
               control={control}
               name="name"
               label="Nome"
@@ -163,6 +164,7 @@ export function ServiceFormDialog({
               fullWidth
             />
             <RHFCurrencyField
+              required
               control={control}
               name="priceInput"
               label="Preço"

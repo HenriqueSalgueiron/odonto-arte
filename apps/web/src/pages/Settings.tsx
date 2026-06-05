@@ -122,24 +122,28 @@ export function SettingsPage() {
             helperText="O nome não é editável"
           />
           <RHFTextField
+            required
             control={control}
             name="responsibleTechnician"
             label="Técnico responsável"
             fullWidth
           />
           <RHFTextField
+            required
             control={control}
             name="responsibleTechnicianCro"
             label="CRO do técnico"
             fullWidth
           />
           <RHFPhoneField
+            required
             control={control}
             name="phone"
             label="Telefone"
             fullWidth
           />
           <RHFTextField
+            required
             control={control}
             name="email"
             label="Email"

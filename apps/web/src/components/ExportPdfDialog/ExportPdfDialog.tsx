@@ -201,9 +201,9 @@ export function ExportPdfDialog({ open, onClose, dentistId }: Props) {
           <Stack spacing={3}>
             {dentistId ? (
               <Alert severity="info">
-                Este PDF é visualmente idêntico à tabela geral. Os preços
-                exibidos são os efetivos deste dentista — se ele não tem preços
-                personalizados, o resultado será igual ao da exportação geral.
+                O PDF gerado tem o mesmo formato da tabela geral. Quando este
+            dentista não tem preço personalizado para um serviço, o valor
+            exibido é o da tabela geral.
               </Alert>
             ) : null}
 

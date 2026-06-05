@@ -22,7 +22,6 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
-import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   getDentistsDentistidPricesQueryKey,
@@ -79,7 +78,12 @@ export function DentistPricesPage() {
           component={RouterLink}
           to="/dentists"
           underline="hover"
-          sx={{ display: "inline-flex", alignItems: "center", gap: 0.5, width: "fit-content" }}
+          sx={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 0.5,
+            width: "fit-content",
+          }}
         >
           <ArrowBackIcon fontSize="small" />
           Voltar para dentistas
@@ -107,19 +111,6 @@ export function DentistPricesPage() {
           >
             Exportar PDF
           </Button>
-        </Stack>
-        <Stack
-          direction="row"
-          spacing={0.5}
-          alignItems="center"
-          color="text.secondary"
-        >
-          <InfoOutlinedIcon fontSize="inherit" />
-          <Typography variant="caption" color="text.secondary">
-            O PDF gerado tem o mesmo formato da tabela geral. Quando este
-            dentista não tem preço personalizado para um serviço, o valor
-            exibido é o da tabela.
-          </Typography>
         </Stack>
       </Stack>
 
@@ -180,11 +171,17 @@ export function DentistPricesPage() {
                 return (
                   <TableRow key={row.serviceId}>
                     <TableCell>{row.serviceName}</TableCell>
-                    <TableCell align="right">{formatBRL(row.tablePrice)}</TableCell>
                     <TableCell align="right">
-                      {hasOverride ? formatBRL(row.specificPrice as number) : "—"}
+                      {formatBRL(row.tablePrice)}
                     </TableCell>
-                    <TableCell align="right">{formatBRL(row.effectivePrice)}</TableCell>
+                    <TableCell align="right">
+                      {hasOverride
+                        ? formatBRL(row.specificPrice as number)
+                        : "—"}
+                    </TableCell>
+                    <TableCell align="right">
+                      {formatBRL(row.effectivePrice)}
+                    </TableCell>
                     <TableCell align="right">
                       <IconButton
                         aria-label={setLabel}

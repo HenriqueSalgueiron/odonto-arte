@@ -133,7 +133,7 @@ function LabHeader({ labInfo }: { labInfo: LabInfoForPdf }) {
       <View style={styles.rowBase}>
         <View style={styles.labContactRow}>
           {labInfo.phone ? (
-            <Text style={styles.labMetaText}>tel. {labInfo.phone}</Text>
+            <Text style={styles.labMetaText}>telefone: {labInfo.phone}</Text>
           ) : null}
           {labInfo.email ? (
             <Text style={styles.labMetaText}>e-mail: {labInfo.email}</Text>
