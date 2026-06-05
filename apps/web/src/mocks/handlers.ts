@@ -160,6 +160,36 @@ export function resetFakeLabInfoDb(value: FakeLabInfo | null = null) {
   fakeLabInfoDb.value = value ? { ...value } : null;
 }
 
+type FakeExportTemplate = {
+  id: string;
+  categoryOrder: string[];
+  observations: string[];
+  updatedAt: string;
+};
+
+export const fakeExportTemplateDb: { value: FakeExportTemplate | null } = {
+  value: null,
+};
+
+export function makeFakeExportTemplate(
+  overrides: Partial<FakeExportTemplate> = {},
+): FakeExportTemplate {
+  return {
+    id: overrides.id ?? "export-template-singleton",
+    categoryOrder: overrides.categoryOrder ?? [],
+    observations: overrides.observations ?? [],
+    updatedAt: overrides.updatedAt ?? NOW,
+  };
+}
+
+export function resetFakeExportTemplateDb(
+  value: FakeExportTemplate | null = null,
+) {
+  fakeExportTemplateDb.value = value
+    ? { ...value, categoryOrder: value.categoryOrder.slice(), observations: value.observations.slice() }
+    : null;
+}
+
 export function resetFakeSpecificPricesDb(items: FakeSpecificPrice[] = []) {
   fakeSpecificPricesDb.items = items.map((p) => ({ ...p }));
 }
@@ -201,6 +231,31 @@ export const handlers = [
     }
     return HttpResponse.json(fakeLabInfoDb.value);
   }),
+  http.get(`${API_URL}/export-template/`, () => {
+    if (!fakeExportTemplateDb.value) {
+      fakeExportTemplateDb.value = makeFakeExportTemplate();
+    }
+    return HttpResponse.json(fakeExportTemplateDb.value);
+  }),
+  http.put(`${API_URL}/export-template/`, async ({ request }) => {
+    const body = (await request.json()) as {
+      categoryOrder?: string[];
+      observations?: string[];
+    };
+    const current = fakeExportTemplateDb.value ?? makeFakeExportTemplate();
+    const observations = (body.observations ?? [])
+      .map((o) => o.trim())
+      .filter((o) => o.length > 0);
+    const updated: FakeExportTemplate = {
+      ...current,
+      categoryOrder: body.categoryOrder ?? current.categoryOrder,
+      observations,
+      updatedAt: new Date().toISOString(),
+    };
+    fakeExportTemplateDb.value = updated;
+    return HttpResponse.json(updated);
+  }),
+
   http.put(`${API_URL}/lab-info/`, async ({ request }) => {
     const body = (await request.json()) as Partial<FakeLabInfo>;
     const current = fakeLabInfoDb.value ?? makeFakeLabInfo();
