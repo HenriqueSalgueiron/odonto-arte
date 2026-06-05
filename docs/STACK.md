@@ -15,6 +15,7 @@ Todas as escolhas abaixo são intencionais. Não substituir por alternativas sem
 | **React Hook Form** | Formulários | Performance (uncontrolled by default), integração com Zod via resolver. |
 | **Zod** | Validação de formulários | Schemas gerados pelo Kubb a partir da spec OpenAPI. Usados como resolver no React Hook Form. |
 | **react-pdf (@react-pdf/renderer)** | Geração de PDF | Gera PDF no navegador, sem custo de servidor, sem Chromium no backend. |
+| **@dnd-kit/core + @dnd-kit/sortable** | Drag-and-drop | Reordenação de categorias no dialog de exportação. Acessível (suporte a teclado nativo), leve, sem dependência de HTML5 DnD API. |
 | **vite-plugin-pwa** | PWA | Manifest + service worker para instalação no celular. Sem requisito offline. |
 | **Sentry (@sentry/react)** | Error tracking + performance | Captura erros automaticamente com contexto. Mede Web Vitals e performance de rotas. Free tier suficiente. |
 | **MSW (Mock Service Worker)** | Mock de API nos testes | Intercepta requests no nível de rede. Desacopla testes de componente do backend real. |

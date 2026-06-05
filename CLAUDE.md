@@ -13,7 +13,7 @@ Regras de negócio por domínio vivem em `CLAUDE.md` aninhados:
 
 - `apps/api/CLAUDE.md` — convenções do backend.
 - `apps/web/CLAUDE.md` — convenções do frontend.
-- `apps/api/src/routes/<dom>/CLAUDE.md` — regras específicas de cada domínio (auth, services, dentists, dentists/prices, categories, ...).
+- `apps/api/src/routes/<dom>/CLAUDE.md` — regras específicas de cada domínio (auth, services, dentists, dentists/prices, categories, export-template, ...).
 
 Schema do banco: `apps/api/prisma/schema.prisma` é a fonte de verdade. Inclui modelos da Fase 1 (em uso) e Fase 2 (modelados pra evitar migrations dolorosas, sem código).
 
