@@ -39,9 +39,10 @@ odontoarte/
 
 ## Comandos
 
-- `pnpm dev` — sobe frontend (`:5173`) e backend (`:3000`) em paralelo.
+- `pnpm dev` — sobe frontend (`:3000`) e backend (`:3001`) em paralelo.
 - `pnpm test` — roda Vitest em todos os pacotes.
 - `pnpm kubb` — regenera `apps/web/src/generated/` a partir da spec OpenAPI atual do backend. Rodar após qualquer mudança de schema/rota no backend. `pnpm type-check` e `pnpm build` já encadeiam essa pipeline via Turborepo.
+- `pnpm e2e` — sobe schema `e2e` no Postgres, migra, semeia admin, roda backend+frontend e dispara Cypress headless. `pnpm e2e:open` faz o mesmo mas abre o Cypress em modo interativo. Detalhes em `apps/web/CLAUDE.md` § E2E.
 - `docker compose -f docker-compose.dev.yml up -d` — sobe Postgres local. Necessário para dev e para os testes de integração do backend.
 
 ---

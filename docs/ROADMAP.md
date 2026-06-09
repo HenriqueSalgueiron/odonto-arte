@@ -101,7 +101,7 @@ Movida para a Fase 3 (ver `docs/PRODUCT.md` § 3). Não faz parte do MVP. Numera
 - Testes de componente frontend: dialog popula com template salvo, drag-and-drop reordena, adicionar/remover observação, lab não configurado mostra aviso, mudança no estado dispara PUT antes do download, ausência de mudança não dispara PUT.
 - Plugar botões "Exportar PDF" em `ServicesListPage` e `DentistPricesPage`.
 
-## Etapa 13 — Testes E2E (Cypress) ⏳
+## Etapa 13 — Testes E2E (Cypress) ✅
 - Configurar Cypress no projeto (apps/web/cypress/).
 - Configurar scripts para rodar backend + frontend em modo de teste.
 - Escrever suítes E2E dos fluxos principais:

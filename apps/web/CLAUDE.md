@@ -75,3 +75,48 @@ Quando precisar de um campo com mask novo (CPF, CRO, etc.), crie `RHFXxxField` a
 - **E2E** (Cypress): em `apps/web/cypress/e2e/`.
 
 Pasta `generated/` é excluída de testes — é código de terceiros na prática.
+
+## E2E (Cypress)
+
+### Estrutura
+
+```
+apps/web/
+├── cypress.config.ts        # Config principal + task db:reset
+└── cypress/
+    ├── e2e/
+    │   ├── auth.cy.ts       # Login via UI (válido + inválido)
+    │   ├── services.cy.ts   # CRUD de serviço
+    │   ├── categories.cy.ts # Criar categoria inline
+    │   ├── dentist-prices.cy.ts
+    │   └── export-pdf.cy.ts
+    ├── support/
+    │   ├── e2e.ts           # Entry point
+    │   └── commands.ts      # cy.login + cy.apiRequest
+    └── tsconfig.json        # TS isolado (evita conflito de globals com Vitest)
+```
+
+### Como rodar
+
+- `pnpm e2e` — headless (CI/sanity). Sobe schema `e2e`, migrations, seed, servidores, roda Cypress, mata tudo.
+- `pnpm e2e:open` — modo interativo (dev/debug). Mesma orquestração, mas Cypress fica aberto e você roda specs visualmente.
+
+O orchestrator (`scripts/e2e.ts` na raiz) faz: drop+recreate schema `e2e` → `prisma migrate deploy` → `prisma db seed` (admin user + lab info vazio) → `start-server-and-test` orquestrando `pnpm dev` + Cypress.
+
+### Isolamento de dados
+
+Cada teste roda com banco limpo via `cy.task("db:reset")` em `beforeEach`. O task trunca todas as tabelas **exceto `users`** (admin persiste pra `cy.login` não precisar re-hashear Argon2id a cada teste).
+
+**Gotcha do Turborepo:** Turbo 2.x roda em strict env mode — só passa pra tasks filhas uma allowlist de env vars. `DATABASE_URL` precisa estar listada em `passThroughEnv` no `turbo.json` (no task `dev`), senão o api ignora o `?schema=e2e` injetado pelo orchestrator e acaba escrevendo no schema `public` (=dev). Bug silencioso porque o Cypress task ainda enxerga o schema certo via seu próprio processo.
+
+### Custom commands
+
+- `cy.login(email?, password?)` — login programático via `POST /auth/login`. Salva tokens no `localStorage` no formato Zustand persist e cacheia via `cy.session`. Defaults vêm de `Cypress.env('adminEmail')` / `adminPassword'` (injetados pelo orchestrator a partir do `.env` da api).
+- `cy.apiRequest(method, path, body?)` — request autenticado pra API. Cacheia o access token em closure pelo spec inteiro (rápido pra seedar dados em vários testes sem relogar).
+
+### O que cobre vs não cobre
+
+E2E cobre **fluxos do usuário ponta a ponta** — clicar em botões, preencher forms, ver resultado. NÃO valida:
+
+- **Conteúdo binário do PDF**: o `export-pdf.cy.ts` confere que o dialog abre, observação é adicionada, `PUT /export-template` é disparado e dialog fecha. **Não parseia o PDF baixado.** Validação do layout/conteúdo do PDF mora nos unit tests do `PriceListDocument` e do `buildSectionsByCategory`.
+- **Drag-and-drop real**: `@dnd-kit` usa pointer events que jsdom/Cypress não simulam bem. Testes de DnD ficam nos unit tests do `CategoryOrderList`.
