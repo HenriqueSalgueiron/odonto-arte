@@ -14,6 +14,11 @@ const envSchema = z.object({
 
   UPSTASH_REDIS_REST_URL: z.url(),
   UPSTASH_REDIS_REST_TOKEN: z.string().min(1),
+
+  // Opcional. Quando setado, o Sentry captura erros do backend.
+  // Em prod (Fly) é setado como secret. Em dev local, ausente por padrão pra
+  // não poluir o dashboard com ruído.
+  SENTRY_DSN: z.url().optional(),
 });
 
 export type Env = z.infer<typeof envSchema>;

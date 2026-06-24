@@ -150,3 +150,13 @@ PNGs gerados são versionados (pequenos, mudam pouco) pra não precisar regerar 
 - **`pnpm dev`** — SW desligado, sem PWA.
 - **`pnpm build` + `pnpm --filter web preview`** — serve o build de produção em `:4173`, com SW ativo. Chrome DevTools → Application tab mostra manifest, SW, caches.
 - **`pnpm --filter web preview --host`** — mesmo, mas exposto na rede local. Pega o IP do mac (`ipconfig getifaddr en0`), abre no celular pra testar "Adicionar à tela inicial". API não funciona via IP porque a build embute `VITE_API_URL=http://localhost:3001`; é só pra testar UX de instalação.
+
+## Sentry
+
+`@sentry/react` captura erros do frontend automaticamente.
+
+- **`Sentry.init` em `main.tsx`**, antes do `createRoot()`. Pulado se `VITE_SENTRY_DSN` não está setado (default em dev). Em prod (Vercel) é setado como env.
+- **`Sentry.ErrorBoundary` envolve `<App />`** com fallback em `components/SentryFallback.tsx` (tela "Algo deu errado" + botão de recarregar). ErrorBoundary só pega erros **durante o render** — erros em event handlers e promises não-tratadas são capturados pelo handler global do Sentry (`window.onerror` / `unhandledrejection`) que o `init` instala automaticamente.
+- **Sem performance monitoring.** `tracesSampleRate: 0`. Só captura de erros.
+- **CSP precisa permitir `https://*.ingest.us.sentry.io`** no `connect-src` (`index.html`). Sem isso, o browser bloqueia o POST dos eventos pro Sentry — bug silencioso, errors aparecem no console mas não chegam no dashboard.
+- **Trackers blockers (Brave Shields, uBlock, etc.) bloqueiam Sentry no client.** Em prod, usuárias com bloqueador agressivo não aparecem nos dados. Trade-off normal.

@@ -117,11 +117,16 @@ Movida para a Fase 3 (ver `docs/PRODUCT.md` § 3). Não faz parte do MVP. Numera
 
 **Follow-up:** dynamic import do `@react-pdf/renderer` no `ExportPdfDialog`/`downloadPdf.ts`. Hoje o bundle inicial passa de 2 MiB por causa do Yoga WASM + MUI; subimos o `workbox.maximumFileSizeToCacheInBytes` pra 3 MiB pra desbloquear. Com dynamic import o bundle inicial cai ~800KB e o limite volta pro default. Não-bloqueante pra fase 1; tratar quando code-splitting virar prioridade.
 
-## Etapa 15 — Sentry ⏳
+## Etapa 15 — Sentry ✅
 - Criar projetos no Sentry (um para frontend, um para backend).
 - Integrar @sentry/react no frontend.
 - Integrar @sentry/node no backend.
 - Verificar que erros aparecem no dashboard.
+
+**Follow-ups (tratar na Etapa 17 — CI/CD):**
+- **Upload de source maps via `@sentry/vite-plugin`**: sem isso, stack traces no dashboard ficam minificados (`at t (index.js:1:758000)`). Configurar o plugin no `vite.config.ts` pra subir source maps pro Sentry durante `pnpm build`, e garantir que os `.map` NÃO vão pro `dist/` final (mantém código fonte fora do site público). Source maps ficam só no Sentry.
+- **`SENTRY_AUTH_TOKEN` como secret do GitHub Actions**: o plugin precisa desse token pra autenticar contra o Sentry no upload. Gerar em sentry.io → Settings → Auth Tokens, dar escopo de `project:releases`, adicionar como secret no repo.
+- **Release tagging**: cada deploy associa erros a uma release (commit SHA ou tag). O plugin do Vite faz isso automaticamente se configurado.
 
 ## Etapa 16 — Docker + Deploy ⏳
 - Escrever Dockerfile multi-stage para o backend.

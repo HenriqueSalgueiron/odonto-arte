@@ -39,3 +39,13 @@ apps/api/src/
 ## Domínio por pasta
 
 Cada domínio em `src/routes/<dom>/` tem um `index.ts` que registra as rotas do domínio, um arquivo por endpoint, e (quando vale a pena) um `CLAUDE.md` com regras de negócio específicas. Schemas Zod do domínio vão em `src/schemas/<dom>.ts`.
+
+## Sentry
+
+`@sentry/node` captura exceções automaticamente.
+
+- **`src/instrument.ts`** inicializa o Sentry. É o **primeiro import** do `server.ts` — auto-instrumentation do `@sentry/node` patcha módulos como `http` e `fastify`, então precisa rodar antes desses módulos serem importados.
+- **`import "dotenv/config"`** é o primeiro import do `instrument.ts`. tsx não carrega `.env` cedo o suficiente — o load normal só rola quando o Prisma client é instanciado. Sem o `dotenv/config` explícito, `SENTRY_DSN` estaria undefined no momento do `Sentry.init()`.
+- **`SENTRY_DSN` é opcional** no schema Zod do env. Em prod (Fly) é setado como secret. Em dev local, ausente por default — pra não poluir o dashboard com erros de desenvolvimento. Sentry SDK opera como no-op quando DSN não está setado.
+- **`Sentry.setupFastifyErrorHandler(app)`** em `server.ts` (depois do `buildApp`) hooka captura de erros no Fastify. Não substitui o `setErrorHandler` do `errorHandlerPlugin` — adiciona captura em paralelo via onError hook.
+- **Sem performance monitoring.** `tracesSampleRate: 0`. Só captura de erros. Liga depois se sentir necessidade.

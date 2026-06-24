@@ -17,7 +17,7 @@ Todas as escolhas abaixo são intencionais. Não substituir por alternativas sem
 | **react-pdf (@react-pdf/renderer)** | Geração de PDF | Gera PDF no navegador, sem custo de servidor, sem Chromium no backend. |
 | **@dnd-kit/core + @dnd-kit/sortable** | Drag-and-drop | Reordenação de categorias no dialog de exportação. Acessível (suporte a teclado nativo), leve, sem dependência de HTML5 DnD API. |
 | **vite-plugin-pwa** | PWA | Manifest + service worker para instalação no celular. Sem requisito offline. |
-| **Sentry (@sentry/react)** | Error tracking + performance | Captura erros automaticamente com contexto. Mede Web Vitals e performance de rotas. Free tier suficiente. |
+| **Sentry (@sentry/react)** | Error tracking | Captura erros do frontend (render, event handlers, promises não-tratadas) e envia pro dashboard. Performance monitoring desligado (decisão da Etapa 15). Free tier suficiente. |
 | **MSW (Mock Service Worker)** | Mock de API nos testes | Intercepta requests no nível de rede. Desacopla testes de componente do backend real. |
 | **Cypress** | Testes E2E | Testes end-to-end no navegador real. Simula fluxos completos da usuária. |
 
@@ -38,7 +38,7 @@ Todas as escolhas abaixo são intencionais. Não substituir por alternativas sem
 | **@upstash/redis** | Redis client | Conexão com Upstash Redis via REST API. Armazena refresh tokens com TTL automático (expiram sozinhos, sem job de limpeza). Serverless, funciona em qualquer ambiente. |
 | **@fastify/cors** | CORS | Liberar requests do frontend (domínios diferentes: Vercel ↔ Fly). |
 | **Pino** (embutido no Fastify) | Logging estruturado | Logs JSON automáticos de cada request. Configuração padrão do Fastify, sem setup extra. Enriquecer com logs customizados nos handlers conforme necessidade. |
-| **Sentry (@sentry/node)** | Error tracking + performance | Captura exceções com contexto da request. Mede duração de requests e queries. Free tier suficiente. |
+| **Sentry (@sentry/node)** | Error tracking | Captura exceções do backend com contexto da request via `setupFastifyErrorHandler`. Performance monitoring desligado (decisão da Etapa 15). Free tier suficiente. |
 
 ## Pipeline de Tipos (fonte de verdade → frontend)
 
