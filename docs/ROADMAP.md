@@ -111,9 +111,11 @@ Movida para a Fase 3 (ver `docs/PRODUCT.md` § 3). Não faz parte do MVP. Numera
   - Criar dentista → definir preço específico → verificar preço efetivo.
   - Configurar laboratório → exportar PDF (geral) com observações e ordem custom → verificar download.
 
-## Etapa 14 — PWA ⏳
+## Etapa 14 — PWA ✅
 - Configurar vite-plugin-pwa com manifest e ícones.
 - Testar instalação no celular.
+
+**Follow-up:** dynamic import do `@react-pdf/renderer` no `ExportPdfDialog`/`downloadPdf.ts`. Hoje o bundle inicial passa de 2 MiB por causa do Yoga WASM + MUI; subimos o `workbox.maximumFileSizeToCacheInBytes` pra 3 MiB pra desbloquear. Com dynamic import o bundle inicial cai ~800KB e o limite volta pro default. Não-bloqueante pra fase 1; tratar quando code-splitting virar prioridade.
 
 ## Etapa 15 — Sentry ⏳
 - Criar projetos no Sentry (um para frontend, um para backend).

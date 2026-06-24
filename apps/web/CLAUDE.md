@@ -120,3 +120,33 @@ E2E cobre **fluxos do usuário ponta a ponta** — clicar em botões, preencher 
 
 - **Conteúdo binário do PDF**: o `export-pdf.cy.ts` confere que o dialog abre, observação é adicionada, `PUT /export-template` é disparado e dialog fecha. **Não parseia o PDF baixado.** Validação do layout/conteúdo do PDF mora nos unit tests do `PriceListDocument` e do `buildSectionsByCategory`.
 - **Drag-and-drop real**: `@dnd-kit` usa pointer events que jsdom/Cypress não simulam bem. Testes de DnD ficam nos unit tests do `CategoryOrderList`.
+
+## PWA
+
+A app é instalável como PWA via `vite-plugin-pwa`. Configuração em `vite.config.ts` (bloco `VitePWA`).
+
+### Decisões
+
+- **`registerType: "autoUpdate"`** — service worker novo ativa imediatamente quando detectado, sem pedir confirmação. Usuária sempre tá na última versão; ela pode ver o app recarregar em uma atualização (raro), mas sem prompts.
+- **`devOptions.enabled: false`** — SW desligado em `pnpm dev` pra não atrapalhar HMR. Só ativa em `pnpm build` + `pnpm preview` ou em produção.
+- **Sem cache offline de API.** O `workbox.globPatterns` cobre só app shell (HTML/JS/CSS/fontes/ícones). Requests pra API passam direto, sem cache. Casa com a decisão do produto de "sem requisito offline".
+- **`workbox.maximumFileSizeToCacheInBytes: 3 MiB`** (default = 2 MiB). Subimos porque o bundle principal passa de 2 MiB por causa do `@react-pdf/renderer` (Yoga WASM) + MUI sem code-splitting. Volta pro default quando aplicarmos o follow-up de dynamic import (ver `docs/ROADMAP.md`).
+- **`apple-touch-icon` + `theme-color` no `index.html`** (redundância com o manifest) porque iOS Safari não lê manifest do mesmo jeito que Android Chrome — sem essas meta tags, ícone no home do iPhone sai com screenshot da página.
+
+### Ícones
+
+Fonte única: `public/icon-source.svg` (monograma "OA" branco em gradiente azul, italic serif, drop shadow). Os PNGs derivados (`pwa-64x64.png`, `pwa-192x192.png`, `pwa-512x512.png`, `maskable-icon-512x512.png`, `apple-touch-icon-180x180.png`, `favicon.ico`) são gerados pelo `@vite-pwa/assets-generator` via `pwa-assets.config.ts` usando o preset `minimal2023Preset`.
+
+**Pra regerar** (depois de mexer no SVG fonte):
+
+```
+pnpm --filter web generate:pwa-assets
+```
+
+PNGs gerados são versionados (pequenos, mudam pouco) pra não precisar regerar no CI/deploy.
+
+### Como testar
+
+- **`pnpm dev`** — SW desligado, sem PWA.
+- **`pnpm build` + `pnpm --filter web preview`** — serve o build de produção em `:4173`, com SW ativo. Chrome DevTools → Application tab mostra manifest, SW, caches.
+- **`pnpm --filter web preview --host`** — mesmo, mas exposto na rede local. Pega o IP do mac (`ipconfig getifaddr en0`), abre no celular pra testar "Adicionar à tela inicial". API não funciona via IP porque a build embute `VITE_API_URL=http://localhost:3001`; é só pra testar UX de instalação.
