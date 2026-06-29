@@ -1,0 +1,58 @@
+# .dockerignore — o que NÃO mandar pro Docker daemon ao buildar
+# (similar ao .gitignore, mas só pra contexto do build).
+#
+# Quanto menos coisa mandar, mais rápido o build começa e menos chance de
+# vazar segredo (ex: .env) pra dentro da imagem por engano.
+
+# node_modules locais — pnpm instala fresh dentro da imagem
+**/node_modules
+
+# Build outputs locais — gerados de novo dentro da imagem
+**/dist
+**/.turbo
+.turbo
+**/*.tsbuildinfo
+
+# Segredos — vão como envs/secrets na Fly, nunca embarcam na imagem
+.env
+**/.env
+**/.env.*
+!**/.env.example
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Testes (imagem de produção não precisa)
+**/coverage
+**/__tests__
+**/*.test.ts
+**/*.test.tsx
+
+# Cypress (E2E não vai pra imagem do backend)
+apps/web/cypress
+apps/web/cypress.config.ts
+
+# Editor / OS
+.vscode
+.idea
+.DS_Store
+Thumbs.db
+
+# Docs
+docs
+**/*.md
+**/CLAUDE.md
+
+# Plans/cache locais
+.claude
+
+# Generated code do Kubb (regenerado se precisar; backend não consome)
+apps/web/src/generated
+apps/api/openapi.json
+
+# Logs
+**/*.log
+npm-debug.log*
+pnpm-debug.log*

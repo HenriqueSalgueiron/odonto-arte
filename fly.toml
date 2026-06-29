@@ -1,0 +1,49 @@
+# fly.toml — config da app backend do OdontoArte na Fly.io.
+#
+# Roda a partir da raiz do monorepo:
+#   fly deploy
+# (Não rodar de dentro de apps/api/ — o Dockerfile depende de arquivos da
+# raiz tipo pnpm-workspace.yaml e tsconfig.base.json.)
+
+app = "odontoarte-api"
+primary_region = "gru"  # São Paulo. Combina com Neon SP + Upstash SP.
+
+[build]
+  dockerfile = "apps/api/Dockerfile"
+
+# --------------------------------------------------------------------
+# HTTP service — expõe o backend pra internet com HTTPS automático.
+# --------------------------------------------------------------------
+[http_service]
+  internal_port = 3001
+  force_https = true
+
+  # Autostop economiza dinheiro: quando a app fica sem requests por uns
+  # minutos, a máquina é parada (não destruída). Próxima request acorda em
+  # 5-10s. Sem cold start de 30s+ como Render.
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0  # pode dormir tudo
+
+  processes = ["app"]
+
+  [http_service.concurrency]
+    type = "requests"
+    soft_limit = 100
+    hard_limit = 200
+
+# --------------------------------------------------------------------
+# VM mínima — shared-cpu, 256MB de RAM. Fastify + Prisma rodam tranquilo.
+# Se faltar memória (improvável), pode subir pra 512MB com pouco custo.
+# --------------------------------------------------------------------
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "256mb"
+
+# --------------------------------------------------------------------
+# Vars de ambiente NÃO-secretas. Pra segredos use `fly secrets set`.
+# --------------------------------------------------------------------
+[env]
+  NODE_ENV = "production"
+  PORT = "3001"
+  HOST = "0.0.0.0"

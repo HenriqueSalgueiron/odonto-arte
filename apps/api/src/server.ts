@@ -16,7 +16,7 @@ async function start() {
   Sentry.setupFastifyErrorHandler(app);
 
   try {
-    await app.listen({ port: env.PORT, host: "::" });
+    await app.listen({ port: env.PORT, host: env.HOST });
   } catch (err) {
     app.log.error(err);
     process.exit(1);
