@@ -16,7 +16,7 @@
     "db:studio": "prisma studio",
     "db:reset": "prisma migrate reset",
     "prisma:generate": "prisma generate",
-    "openapi:generate": "tsx scripts/generateOpenapi.ts"
+    "openapi:generate": "prisma generate && tsx scripts/generateOpenapi.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
