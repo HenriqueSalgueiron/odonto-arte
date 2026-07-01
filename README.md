@@ -2,8 +2,6 @@
 
 > Aplicação web construída do zero para um laboratório de prótese dentária familiar. Substitui o uso de diversas planilhas Excel hoje usadas para gerenciar preços por dentista (e, em fases seguintes, as fichas em papel das ordens de serviço) por uma ferramenta acessível de qualquer dispositivo, pensada para uma usuária com baixa familiaridade técnica.
 
-**Status:** em desenvolvimento. MVP (Fase 1) parcialmente concluído — ver [Roadmap](#roadmap).
-
 ---
 
 ## Sobre o projeto
@@ -97,13 +95,13 @@ O projeto usa CLAUDE.md em múltiplos níveis para dar contexto a desenvolviment
 
 ---
 
-## Roadmap
+## Funcionalidades e roadmap
 
-Roadmap completo (etapas 1 a 18) em [`docs/ROADMAP.md`](docs/ROADMAP.md).
+Detalhamento das etapas em [`docs/ROADMAP.md`](docs/ROADMAP.md).
 
-- **Fase 1 — MVP** 🚧 Em andamento. Auth, CRUDs de serviços/dentistas, preços por dentista, configurações do laboratório e categorias já implementados. Falta exportação de PDF, PWA, observabilidade (Sentry), Docker e deploy.
-- **Fase 2 — Ordens de Serviço** ⏳ Modelagem do banco já feita (`ServiceOrder`, `ServiceOrderItem`, `OrderAttachment`); implementação após Fase 1. Inclui anexos via AWS S3.
-- **Fase 3+** ⏳ Ajuste global de preços, envio por email (AWS SES) e WhatsApp, relatórios financeiros, multi-usuário.
+- **Fase 1 — Gestão de preços** ✅ Autenticação (JWT + refresh tokens em Redis), CRUDs de serviços e dentistas, tabela de preços por dentista, categorias de serviço, configurações do laboratório, exportação de PDF direto no navegador, PWA instalável, error tracking com Sentry, suíte E2E com Cypress e backend containerizado (Docker multi-stage).
+- **Fase 2 — Ordens de Serviço** 📋 Próxima evolução: substitui as fichas em papel. Modelagem do banco já concluída (`ServiceOrder`, `ServiceOrderItem`, `OrderAttachment`); inclui anexos via AWS S3.
+- **Fase 3 — Expansões** 📋 Ajuste global de preços, envio da tabela por email (AWS SES) e WhatsApp, relatórios financeiros, multi-usuário.
 
 ---
 
