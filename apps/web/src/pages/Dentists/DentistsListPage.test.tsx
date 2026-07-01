@@ -116,7 +116,10 @@ describe("DentistsListPage", () => {
     await screen.findByText("Dr. Silva");
 
     const user = userEvent.setup();
-    await user.click(screen.getByRole("button", { name: /excluir dr\. silva/i }));
+    await user.click(
+      screen.getByRole("button", { name: /mais ações para dr\. silva/i }),
+    );
+    await user.click(screen.getByRole("menuitem", { name: /desativar/i }));
 
     expect(await screen.findByRole("dialog")).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: /cancelar/i }));
@@ -149,7 +152,10 @@ describe("DentistsListPage", () => {
     await screen.findByText("Dr. Silva");
 
     const user = userEvent.setup();
-    await user.click(screen.getByRole("button", { name: /excluir dr\. silva/i }));
+    await user.click(
+      screen.getByRole("button", { name: /mais ações para dr\. silva/i }),
+    );
+    await user.click(screen.getByRole("menuitem", { name: /desativar/i }));
 
     const dialog = await screen.findByRole("dialog");
     await user.click(within(dialog).getByRole("button", { name: /desativar/i }));
@@ -192,8 +198,9 @@ describe("DentistsListPage", () => {
 
     const user = userEvent.setup();
     await user.click(
-      screen.getByRole("button", { name: /preços de dr\. silva/i }),
+      screen.getByRole("button", { name: /mais ações para dr\. silva/i }),
     );
+    await user.click(screen.getByRole("menuitem", { name: /preços/i }));
 
     expect(await screen.findByText(/página de preços/i)).toBeInTheDocument();
   });
@@ -213,8 +220,12 @@ describe("DentistsListPage", () => {
     await user.click(screen.getByLabelText(/mostrar inativos/i));
 
     await screen.findByText("Dr. Off");
+    // Abre o menu de ações; item "Preços" não deve aparecer para inativos.
+    await user.click(
+      screen.getByRole("button", { name: /mais ações para dr\. off/i }),
+    );
     expect(
-      screen.queryByRole("button", { name: /preços de dr\. off/i }),
+      screen.queryByRole("menuitem", { name: /^preços$/i }),
     ).not.toBeInTheDocument();
   });
 });

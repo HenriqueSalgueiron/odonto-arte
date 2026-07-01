@@ -6,7 +6,6 @@ import {
   Chip,
   Container,
   FormControlLabel,
-  IconButton,
   Paper,
   Skeleton,
   Stack,
@@ -14,7 +13,6 @@ import {
   Table,
   TableBody,
   TableCell,
-  TableContainer,
   TableHead,
   TableRow,
   TextField,
@@ -23,6 +21,9 @@ import {
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
+import { RowActionsMenu } from "@/components/RowActionsMenu";
+import { stickyActionsCell } from "@/components/stickyActionsCell";
+import { StickyActionsTableContainer } from "@/components/StickyActionsTableContainer";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   useDeleteServicesId,
@@ -135,7 +136,7 @@ export function ServicesListPage() {
       {isError ? (
         <Alert severity="error">Erro ao carregar serviços.</Alert>
       ) : (
-        <TableContainer component={Paper}>
+        <StickyActionsTableContainer component={Paper}>
           <Table>
             <TableHead>
               <TableRow>
@@ -148,7 +149,9 @@ export function ServicesListPage() {
                 </TableCell>
                 <TableCell>Preço</TableCell>
                 <TableCell>Status</TableCell>
-                <TableCell align="right">Ações</TableCell>
+                <TableCell align="right" sx={stickyActionsCell}>
+                  Ações
+                </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -170,7 +173,7 @@ export function ServicesListPage() {
                       <TableCell>
                         <Skeleton />
                       </TableCell>
-                      <TableCell>
+                      <TableCell sx={stickyActionsCell}>
                         <Skeleton />
                       </TableCell>
                     </TableRow>
@@ -219,25 +222,29 @@ export function ServicesListPage() {
                       <Chip label="Inativo" size="small" />
                     )}
                   </TableCell>
-                  <TableCell align="right">
-                    <IconButton
-                      aria-label={`Editar ${service.name}`}
-                      onClick={() => openEdit(service)}
-                    >
-                      <EditIcon />
-                    </IconButton>
-                    <IconButton
-                      aria-label={`Excluir ${service.name}`}
-                      onClick={() => setConfirming(service)}
-                    >
-                      <DeleteIcon />
-                    </IconButton>
+                  <TableCell align="right" sx={stickyActionsCell}>
+                    <RowActionsMenu
+                      ariaLabel={`Mais ações para ${service.name}`}
+                      items={[
+                        {
+                          label: "Editar",
+                          icon: <EditIcon fontSize="small" />,
+                          onClick: () => openEdit(service),
+                        },
+                        {
+                          label: "Desativar",
+                          icon: <DeleteIcon fontSize="small" />,
+                          onClick: () => setConfirming(service),
+                          color: "error",
+                        },
+                      ]}
+                    />
                   </TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
-        </TableContainer>
+        </StickyActionsTableContainer>
       )}
 
       <ServiceFormDialog

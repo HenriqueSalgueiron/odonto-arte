@@ -1,5 +1,16 @@
 import "@testing-library/jest-dom/vitest";
-import { afterAll, afterEach, beforeAll, beforeEach } from "vitest";
+import { afterAll, afterEach, beforeAll, beforeEach, vi } from "vitest";
+
+// jsdom não implementa ResizeObserver. Componentes que observam tamanho de
+// elementos (ex: StickyActionsTableContainer) precisam dessa fake.
+if (typeof globalThis.ResizeObserver === "undefined") {
+  globalThis.ResizeObserver = vi.fn().mockImplementation(() => ({
+    observe: vi.fn(),
+    unobserve: vi.fn(),
+    disconnect: vi.fn(),
+  }));
+}
+
 import { server } from "@/mocks/server";
 import { useAuthStore } from "@/stores/authStore";
 import {

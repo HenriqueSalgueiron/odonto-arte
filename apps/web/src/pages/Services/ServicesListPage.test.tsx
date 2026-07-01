@@ -104,7 +104,8 @@ describe("ServicesListPage", () => {
     await screen.findByText("PPR");
 
     const user = userEvent.setup();
-    await user.click(screen.getByRole("button", { name: /excluir ppr/i }));
+    await user.click(screen.getByRole("button", { name: /mais ações para ppr/i }));
+    await user.click(screen.getByRole("menuitem", { name: /desativar/i }));
 
     expect(await screen.findByRole("dialog")).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: /cancelar/i }));
@@ -135,7 +136,8 @@ describe("ServicesListPage", () => {
     await screen.findByText("PPR");
 
     const user = userEvent.setup();
-    await user.click(screen.getByRole("button", { name: /excluir ppr/i }));
+    await user.click(screen.getByRole("button", { name: /mais ações para ppr/i }));
+    await user.click(screen.getByRole("menuitem", { name: /desativar/i }));
 
     const dialog = await screen.findByRole("dialog");
     await user.click(within(dialog).getByRole("button", { name: /desativar/i }));

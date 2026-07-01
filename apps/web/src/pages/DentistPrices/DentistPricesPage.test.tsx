@@ -104,15 +104,25 @@ describe("DentistPricesPage", () => {
     renderAt(dentist.id);
 
     await screen.findByText("SemOverride");
+
+    const user = userEvent.setup();
+
+    // Linha sem override: o menu não deve ter o item "Remover preço específico".
+    await user.click(
+      screen.getByRole("button", { name: /mais ações para semoverride/i }),
+    );
     expect(
-      screen.queryByRole("button", {
-        name: /remover preço específico de semoverride/i,
-      }),
+      screen.queryByRole("menuitem", { name: /remover preço específico/i }),
     ).not.toBeInTheDocument();
+    // Fecha o menu (clique fora)
+    await user.keyboard("{Escape}");
+
+    // Linha com override: o menu deve ter o item "Remover preço específico".
+    await user.click(
+      screen.getByRole("button", { name: /mais ações para comoverride/i }),
+    );
     expect(
-      screen.getByRole("button", {
-        name: /remover preço específico de comoverride/i,
-      }),
+      screen.getByRole("menuitem", { name: /remover preço específico/i }),
     ).toBeInTheDocument();
   });
 
@@ -138,9 +148,10 @@ describe("DentistPricesPage", () => {
 
     const user = userEvent.setup();
     await user.click(
-      screen.getByRole("button", {
-        name: /remover preço específico de servico5/i,
-      }),
+      screen.getByRole("button", { name: /mais ações para servico5/i }),
+    );
+    await user.click(
+      screen.getByRole("menuitem", { name: /remover preço específico/i }),
     );
     const dialog = await screen.findByRole("dialog");
     await user.click(within(dialog).getByRole("button", { name: /remover/i }));

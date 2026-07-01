@@ -52,7 +52,7 @@ describe("SettingsPage", () => {
     );
     await user.type(screen.getByLabelText(/cro do técnico/i), "CRO 1");
     await user.type(screen.getByLabelText(/telefone/i), "21999998888");
-    await user.type(screen.getByLabelText(/^email$/i), "invalido");
+    await user.type(screen.getByLabelText(/email/i), "invalido");
     await user.click(screen.getByRole("button", { name: /salvar/i }));
 
     expect(await screen.findByText(/email inválido/i)).toBeInTheDocument();
@@ -92,7 +92,7 @@ describe("SettingsPage", () => {
     await user.type(screen.getByLabelText(/cro do técnico/i), "CRO-RJ 123");
     await user.type(screen.getByLabelText(/telefone/i), "21999998888");
     await user.type(
-      screen.getByLabelText(/^email$/i),
+      screen.getByLabelText(/email/i),
       "lab@odontoarte.local",
     );
     await user.click(screen.getByRole("button", { name: /salvar/i }));

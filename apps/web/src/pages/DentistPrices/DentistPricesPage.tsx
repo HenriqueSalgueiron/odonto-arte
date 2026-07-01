@@ -5,7 +5,6 @@ import {
   Box,
   Button,
   Container,
-  IconButton,
   Link,
   Paper,
   Skeleton,
@@ -13,7 +12,6 @@ import {
   Table,
   TableBody,
   TableCell,
-  TableContainer,
   TableHead,
   TableRow,
   Typography,
@@ -23,6 +21,9 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 import { useQueryClient } from "@tanstack/react-query";
+import { RowActionsMenu } from "@/components/RowActionsMenu";
+import { stickyActionsCell } from "@/components/stickyActionsCell";
+import { StickyActionsTableContainer } from "@/components/StickyActionsTableContainer";
 import {
   getDentistsDentistidPricesQueryKey,
   useDeleteDentistsDentistidPricesServiceid,
@@ -117,7 +118,7 @@ export function DentistPricesPage() {
       {isError ? (
         <Alert severity="error">Erro ao carregar preços do dentista.</Alert>
       ) : (
-        <TableContainer component={Paper}>
+        <StickyActionsTableContainer component={Paper}>
           <Table>
             <TableHead>
               <TableRow>
@@ -125,7 +126,9 @@ export function DentistPricesPage() {
                 <TableCell align="right">Preço-tabela</TableCell>
                 <TableCell align="right">Preço específico</TableCell>
                 <TableCell align="right">Preço efetivo</TableCell>
-                <TableCell align="right">Ações</TableCell>
+                <TableCell align="right" sx={stickyActionsCell}>
+                  Ações
+                </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -144,7 +147,7 @@ export function DentistPricesPage() {
                       <TableCell>
                         <Skeleton />
                       </TableCell>
-                      <TableCell>
+                      <TableCell sx={stickyActionsCell}>
                         <Skeleton />
                       </TableCell>
                     </TableRow>
@@ -165,9 +168,9 @@ export function DentistPricesPage() {
 
               {items.map((row) => {
                 const hasOverride = row.specificPrice !== null;
-                const setLabel = hasOverride
-                  ? `Editar preço de ${row.serviceName}`
-                  : `Definir preço de ${row.serviceName}`;
+                const editLabel = hasOverride
+                  ? "Editar preço específico"
+                  : "Definir preço específico";
                 return (
                   <TableRow key={row.serviceId}>
                     <TableCell>{row.serviceName}</TableCell>
@@ -182,28 +185,34 @@ export function DentistPricesPage() {
                     <TableCell align="right">
                       {formatBRL(row.effectivePrice)}
                     </TableCell>
-                    <TableCell align="right">
-                      <IconButton
-                        aria-label={setLabel}
-                        onClick={() => setEditing(row)}
-                      >
-                        <EditIcon />
-                      </IconButton>
-                      {hasOverride ? (
-                        <IconButton
-                          aria-label={`Remover preço específico de ${row.serviceName}`}
-                          onClick={() => setConfirming(row)}
-                        >
-                          <DeleteIcon />
-                        </IconButton>
-                      ) : null}
+                    <TableCell align="right" sx={stickyActionsCell}>
+                      <RowActionsMenu
+                        ariaLabel={`Mais ações para ${row.serviceName}`}
+                        items={[
+                          {
+                            label: editLabel,
+                            icon: <EditIcon fontSize="small" />,
+                            onClick: () => setEditing(row),
+                          },
+                          ...(hasOverride
+                            ? [
+                                {
+                                  label: "Remover preço específico",
+                                  icon: <DeleteIcon fontSize="small" />,
+                                  onClick: () => setConfirming(row),
+                                  color: "error" as const,
+                                },
+                              ]
+                            : []),
+                        ]}
+                      />
                     </TableCell>
                   </TableRow>
                 );
               })}
             </TableBody>
           </Table>
-        </TableContainer>
+        </StickyActionsTableContainer>
       )}
 
       <Stack direction="row" justifyContent="flex-end" sx={{ mt: 2 }}>

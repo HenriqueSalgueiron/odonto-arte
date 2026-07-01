@@ -17,7 +17,8 @@ describe("Services CRUD", () => {
     cy.contains("R$ 125,00").should("be.visible");
 
     // Editar
-    cy.get('[aria-label="Editar Serviço E2E"]').click();
+    cy.get('[aria-label="Mais ações para Serviço E2E"]').click();
+    cy.get('[role="menuitem"]').contains("Editar").click();
     cy.get('input[name="name"]').clear().type("Serviço E2E Editado");
     cy.contains("button", "Salvar").click();
 
@@ -25,8 +26,9 @@ describe("Services CRUD", () => {
     cy.contains(/^Serviço E2E$/).should("not.exist");
 
     // Desativar
-    cy.get('[aria-label="Excluir Serviço E2E Editado"]').click();
-    cy.contains("button", "Desativar").click();
+    cy.get('[aria-label="Mais ações para Serviço E2E Editado"]').click();
+    cy.get('[role="menuitem"]').contains("Desativar").click();
+    cy.get('[role="dialog"]').contains("button", "Desativar").click();
 
     // Some da lista (filtro padrão exclui inativos)
     cy.contains("Serviço E2E Editado").should("not.exist");

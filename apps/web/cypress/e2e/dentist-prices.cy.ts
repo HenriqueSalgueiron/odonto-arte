@@ -19,14 +19,16 @@ describe("Dentist Prices", () => {
     cy.contains("button", "Criar").click();
 
     cy.contains("Dr. E2E").should("be.visible");
-    cy.get('[aria-label="Preços de Dr. E2E"]').click();
+    cy.get('[aria-label="Mais ações para Dr. E2E"]').click();
+    cy.get('[role="menuitem"]').contains("Preços").click();
 
     cy.url().should("match", /\/dentists\/[^/]+\/prices$/);
     cy.contains("Serviço Base").should("be.visible");
     cy.contains("R$ 100,00").should("be.visible");
 
     // Definir preço específico
-    cy.get('[aria-label="Definir preço de Serviço Base"]').click();
+    cy.get('[aria-label="Mais ações para Serviço Base"]').click();
+    cy.get('[role="menuitem"]').contains("Definir preço específico").click();
     cy.get('input[name="price"]').type("15000");
     cy.contains("button", "Salvar").click();
 

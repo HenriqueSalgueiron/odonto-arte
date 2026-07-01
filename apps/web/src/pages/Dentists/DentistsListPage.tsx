@@ -6,7 +6,6 @@ import {
   Chip,
   Container,
   FormControlLabel,
-  IconButton,
   Paper,
   Skeleton,
   Stack,
@@ -14,7 +13,6 @@ import {
   Table,
   TableBody,
   TableCell,
-  TableContainer,
   TableHead,
   TableRow,
   TextField,
@@ -23,6 +21,9 @@ import {
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
+import { RowActionsMenu } from "@/components/RowActionsMenu";
+import { stickyActionsCell } from "@/components/stickyActionsCell";
+import { StickyActionsTableContainer } from "@/components/StickyActionsTableContainer";
 import { useNavigate } from "react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import {
@@ -126,7 +127,7 @@ export function DentistsListPage() {
       {isError ? (
         <Alert severity="error">Erro ao carregar dentistas.</Alert>
       ) : (
-        <TableContainer component={Paper}>
+        <StickyActionsTableContainer component={Paper}>
           <Table>
             <TableHead>
               <TableRow>
@@ -139,7 +140,9 @@ export function DentistsListPage() {
                   Email
                 </TableCell>
                 <TableCell>Status</TableCell>
-                <TableCell align="right">Ações</TableCell>
+                <TableCell align="right" sx={stickyActionsCell}>
+                  Ações
+                </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -161,7 +164,7 @@ export function DentistsListPage() {
                       <TableCell>
                         <Skeleton />
                       </TableCell>
-                      <TableCell>
+                      <TableCell sx={stickyActionsCell}>
                         <Skeleton />
                       </TableCell>
                     </TableRow>
@@ -204,33 +207,39 @@ export function DentistsListPage() {
                       <Chip label="Inativo" size="small" />
                     )}
                   </TableCell>
-                  <TableCell align="right">
-                    {dentist.active ? (
-                      <IconButton
-                        aria-label={`Preços de ${dentist.name}`}
-                        onClick={() => navigate(`/dentists/${dentist.id}/prices`)}
-                      >
-                        <AttachMoneyIcon />
-                      </IconButton>
-                    ) : null}
-                    <IconButton
-                      aria-label={`Editar ${dentist.name}`}
-                      onClick={() => openEdit(dentist)}
-                    >
-                      <EditIcon />
-                    </IconButton>
-                    <IconButton
-                      aria-label={`Excluir ${dentist.name}`}
-                      onClick={() => setConfirming(dentist)}
-                    >
-                      <DeleteIcon />
-                    </IconButton>
+                  <TableCell align="right" sx={stickyActionsCell}>
+                    <RowActionsMenu
+                      ariaLabel={`Mais ações para ${dentist.name}`}
+                      items={[
+                        ...(dentist.active
+                          ? [
+                              {
+                                label: "Preços",
+                                icon: <AttachMoneyIcon fontSize="small" />,
+                                onClick: () =>
+                                  navigate(`/dentists/${dentist.id}/prices`),
+                              },
+                            ]
+                          : []),
+                        {
+                          label: "Editar",
+                          icon: <EditIcon fontSize="small" />,
+                          onClick: () => openEdit(dentist),
+                        },
+                        {
+                          label: "Desativar",
+                          icon: <DeleteIcon fontSize="small" />,
+                          onClick: () => setConfirming(dentist),
+                          color: "error",
+                        },
+                      ]}
+                    />
                   </TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
-        </TableContainer>
+        </StickyActionsTableContainer>
       )}
 
       <DentistFormDialog

@@ -134,7 +134,7 @@ describe("ExportPdfDialog", () => {
       expect(screen.getByText(/observações/i)).toBeInTheDocument(),
     );
     expect(
-      screen.queryByText(/visualmente idêntico à tabela geral/i),
+      screen.queryByText(/mesmo formato da tabela geral/i),
     ).not.toBeInTheDocument();
   });
 
@@ -151,7 +151,7 @@ describe("ExportPdfDialog", () => {
     );
     await waitFor(() =>
       expect(
-        screen.getByText(/visualmente idêntico à tabela geral/i),
+        screen.getByText(/mesmo formato da tabela geral/i),
       ).toBeInTheDocument(),
     );
   });
